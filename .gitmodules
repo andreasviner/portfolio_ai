@@ -1,0 +1,3 @@
+[submodule "color-polygraph"]
+	path = color-polygraph
+	url = https://github.com/andreasviner/color-analyzer-ai.git
