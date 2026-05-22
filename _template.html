@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!--
+  TEMPLATE for an AI subdomain sub-project page.
+
+  This subdomain (ai.andreaslindeman.com) only hosts pages that need real
+  ML workloads. The page is expected to live at ai/<slug>/index.html so the
+  public URL becomes https://ai.andreaslindeman.com/<slug>/.
+
+  Steps to use:
+    1. Copy this file to ai/<slug>/index.html
+    2. Update <title>, meta description, canonical, and visible content
+    3. Update the back-link href to point to the matching project on the
+       main portfolio (e.g. https://andreaslindeman.com/projects/<slug>)
+    4. Update the category swatch class (work | school | hobby)
+    5. Add the new URL to ai/sitemap.xml
+    6. Link to this page from the matching project page on the main domain
+    7. If a Norwegian counterpart is needed, copy norwegian_html/_template.html
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[Sub-project Title] · [Parent Project] · Andreas Lindeman</title>
+  <meta name="description" content="[One-sentence description of this AI sub-page.]" />
+  <link rel="canonical" href="https://ai.andreaslindeman.com/[slug]/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="icon" type="image/png" href="../icon.png" />
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Primary">
+    <a href="https://andreaslindeman.com/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.com/#about">About</a></li>
+      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
+      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
+      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://andreaslindeman.no" href="https://andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'), btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){
+          nav.classList.remove('is-open');
+          btn.setAttribute('aria-expanded','false');
+          btn.setAttribute('aria-label','Open menu');
+        }
+        btn.addEventListener('click',function(e){
+          e.stopPropagation();
+          var open=nav.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded',open?'true':'false');
+          btn.setAttribute('aria-label',open?'Close menu':'Open menu');
+        });
+        nav.querySelectorAll('.nav-links a').forEach(function(a){
+          a.addEventListener('click',closeMenu);
+        });
+        document.addEventListener('click',function(e){
+          if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();
+        });
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();
+        });
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="https://andreaslindeman.com/projects/[parent-slug]" class="project-back">Back to [Parent Project]</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>YYYY</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Ongoing</span>
+    </div>
+
+    <h1 class="project-title">[Sub-project Title] <em>(optional italic accent)</em></h1>
+
+    <p class="project-lede">
+      One-paragraph lede that summarises the AI side of the parent project:
+      what was built, why, what is interesting about it.
+    </p>
+
+    <section class="project-section">
+      <h2>Overview</h2>
+      <p>Background, context, what problem this sub-project solves on top of the parent.</p>
+    </section>
+
+    <section class="project-section">
+      <h2>Technical details</h2>
+      <h3>Architecture</h3>
+      <p>How it was built.</p>
+      <ul>
+        <li>Bullet one</li>
+        <li>Bullet two</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Results</h2>
+      <p>Numbers, plots, anything reproducible.</p>
+    </section>
+
+    <section class="project-section">
+      <h2>Project links</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/portfolio/tree/main/ai/[slug]" target="_blank" rel="noopener">Source on GitHub</a>
+      </div>
+    </section>
+
+    <a href="https://andreaslindeman.com/projects/[parent-slug]" class="project-back">Back to [Parent Project]</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Built by hand · No frameworks · Hosted on GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

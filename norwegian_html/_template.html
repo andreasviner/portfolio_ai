@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+  MAL for en norsk underprosjektside på AI-subdomenet.
+
+  Dette subdomenet (ai.andreaslindeman.com på norsk side: bruk samme
+  innhold med .no-domener i lenkene) hoster bare sider som trenger ekte
+  ML-arbeidslast. Filen forventes å ligge under ai/<slug>/index.html eller
+  ai/<slug>/no.html avhengig av hvordan deployen er satt opp, slik at den
+  offentlige URL-en blir https://ai.andreaslindeman.no/<slug>/ (eller
+  tilsvarende sti).
+
+  Steg for å bruke malen:
+    1. Kopier denne fila til ønsket plassering (typisk ai/<slug>/no.html
+       eller en parallell norsk subdomene-rot).
+    2. Oppdater <title>, meta-beskrivelse, canonical og synlig innhold.
+    3. Oppdater tilbakelenken slik at den peker til hovedprosjektet på
+       hoveddomenet (f.eks. https://andreaslindeman.no/projects/<slug>).
+    4. Oppdater kategoriswatch-klassen (work | school | hobby).
+    5. Legg URL-en til i ai/sitemap.xml om den skal indekseres.
+-->
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[Underprosjekttittel] · [Hovedprosjekt] · Andreas Lindeman</title>
+  <meta name="description" content="[Énsetnings beskrivelse av AI-undersiden.]" />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/[slug]/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="icon" type="image/png" href="../../icon.png" />
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://andreaslindeman.com" href="https://andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'), btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){
+          nav.classList.remove('is-open');
+          btn.setAttribute('aria-expanded','false');
+          btn.setAttribute('aria-label','Åpne meny');
+        }
+        btn.addEventListener('click',function(e){
+          e.stopPropagation();
+          var open=nav.classList.toggle('is-open');
+          btn.setAttribute('aria-expanded',open?'true':'false');
+          btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');
+        });
+        nav.querySelectorAll('.nav-links a').forEach(function(a){
+          a.addEventListener('click',closeMenu);
+        });
+        document.addEventListener('click',function(e){
+          if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();
+        });
+        document.addEventListener('keydown',function(e){
+          if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();
+        });
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="https://andreaslindeman.no/projects/[hovedslug]" class="project-back">Tilbake til [Hovedprosjekt]</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>ÅÅÅÅ</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Pågående</span>
+    </div>
+
+    <h1 class="project-title">[Underprosjekttittel] <em>(valgfri kursiv aksent)</em></h1>
+
+    <p class="project-lede">
+      En ingress på ett avsnitt som oppsummerer AI-delen av hovedprosjektet:
+      hva som ble bygget, hvorfor, og hva som er interessant ved det.
+    </p>
+
+    <section class="project-section">
+      <h2>Oversikt</h2>
+      <p>Bakgrunn, kontekst og hvilket problem dette underprosjektet løser.</p>
+    </section>
+
+    <section class="project-section">
+      <h2>Tekniske detaljer</h2>
+      <h3>Arkitektur</h3>
+      <p>Hvordan det ble bygget.</p>
+      <ul>
+        <li>Punkt en</li>
+        <li>Punkt to</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Resultater</h2>
+      <p>Tall, grafer, alt som er reproduserbart.</p>
+    </section>
+
+    <section class="project-section">
+      <h2>Lenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/portfolio/tree/main/ai/[slug]" target="_blank" rel="noopener">Kildekode på GitHub</a>
+      </div>
+    </section>
+
+    <a href="https://andreaslindeman.no/projects/[hovedslug]" class="project-back">Tilbake til [Hovedprosjekt]</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
