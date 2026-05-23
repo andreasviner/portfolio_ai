@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LightGBM + bucket-skårer · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Enkel LightGBM med mål-enkodede 8×8×8 fargebucket-skårer – slår opp hvert valg mot per-bucket feminine/maskuline/alder/humør-gitter via trilineær interpolasjon. Topp kjønn-AUC på color polygraph-leaderboardet." />
-  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-buckets.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-buckets" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -71,7 +71,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+    <a href="../" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -255,7 +255,7 @@
     <section class="project-section">
       <h2>Konfigurasjon</h2>
       <ul class="config-list">
-        <li><strong>Feature-vektor</strong>441 base + 33 perseptuelle (<a href="lgb-perceptual.html">dokumentert her</a>) + 3 kjønn-bucket-totaler (kjønnshode) + 1 alder-bucket-total (aldershode) + 1 humør-bucket-total (humørhode)</li>
+        <li><strong>Feature-vektor</strong>441 base + 33 perseptuelle (<a href="lgb-perceptual">dokumentert her</a>) + 3 kjønn-bucket-totaler (kjønnshode) + 1 alder-bucket-total (aldershode) + 1 humør-bucket-total (humørhode)</li>
         <li><strong>Modell</strong>Enkel LightGBM, identisk konfig som enkelt-LGB-basislinje</li>
         <li><strong>Bucket-gitter</strong>8×8×8 over RGB, 32-brede buckets, sentre ved (16, 48, ..., 240) per kanal</li>
         <li><strong>Per-sesjons delta-verdier</strong>+0.1 * 16 * 3 / 21 ≈ +0.229 per valg, -0.1 per runde-1 tilbudt-men-ikke-valgt farge</li>
@@ -270,12 +270,12 @@
       <div class="project-links">
         <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/color-buckets" target="_blank" rel="noopener">Kildekode på GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/color-buckets/train.py" target="_blank" rel="noopener">train.py</a>
-        <a href="lgb-perceptual.html">Perseptuelle features (mellomeksperiment)</a>
-        <a href="../info/features.html">441-feature basis-pipeline</a>
+        <a href="lgb-perceptual">Perseptuelle features (mellomeksperiment)</a>
+        <a href="../info/features">441-feature basis-pipeline</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+    <a href="../" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
   </main>
 
   <footer class="site-footer">

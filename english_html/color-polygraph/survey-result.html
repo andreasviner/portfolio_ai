@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -641,7 +641,7 @@
           '<a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">More about the project</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
-          window.location.href = 'survey.html';
+          window.location.href = 'survey';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
           const shareData = {
@@ -678,7 +678,7 @@
         data = await getJson('/survey/' + encodeURIComponent(id));
       } catch (err) {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not load results for this ID.<br><a href="survey.html">Take the survey</a></p></div>';
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not load results for this ID.<br><a href="survey">Take the survey</a></p></div>';
         });
         return;
       }
@@ -882,7 +882,7 @@
         const s = document.createElement('div');
         s.className = 'rv-slide';
         wrap.appendChild(s);
-        s.innerHTML = '<div class="rv-center"><p class="rv-error">No survey data found.<br><a href="survey.html">Take the survey</a></p></div>';
+        s.innerHTML = '<div class="rv-center"><p class="rv-error">No survey data found.<br><a href="survey">Take the survey</a></p></div>';
         requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-current')));
         return;
       }

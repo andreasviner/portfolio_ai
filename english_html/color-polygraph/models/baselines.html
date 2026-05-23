@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Single-model baselines · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="The five single-model baselines on the color polygraph leaderboard: LightGBM, XGBoost, HistGradientBoosting, MLP, Linear." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/baselines.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/baselines" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -64,7 +64,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -144,7 +144,7 @@
         <li><strong>LightGBM</strong>n_estimators=1000, num_leaves=63, learning_rate=0.03, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5</li>
         <li><strong>XGBoost</strong>n_estimators=1000, max_depth=6, learning_rate=0.03, subsample=0.85, colsample_bytree=0.85</li>
         <li><strong>MLP</strong>StandardScaler + hidden=(256,128,64), max_iter=400, alpha=1e-3, early stopping on 10% val</li>
-        <li><strong>Feature vector</strong>Same 441 engineered features as the tree-based architectures (<a href="../info/features.html">full breakdown</a>)</li>
+        <li><strong>Feature vector</strong>Same 441 engineered features as the tree-based architectures (<a href="../info/features">full breakdown</a>)</li>
         <li><strong>CV</strong>5-fold StratifiedKFold (gender), KFold (age, mood), seed 42</li>
       </ul>
     </section>
@@ -157,7 +157,7 @@
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
   </main>
 
   <footer class="site-footer">

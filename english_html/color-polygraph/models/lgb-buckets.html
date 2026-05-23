@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LightGBM + bucket scores · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Single LightGBM with target-encoded 8x8x8 colour-bucket scores - looks up every pick against per-bucket girly / masculine / age / mood grids via trilinear interpolation. Top of the gender column on the color polygraph leaderboard." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-buckets.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-buckets" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -71,7 +71,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -257,7 +257,7 @@
     <section class="project-section">
       <h2>Configuration</h2>
       <ul class="config-list">
-        <li><strong>Feature vector</strong>441 base + 33 perceptual (<a href="lgb-perceptual.html">documented here</a>) + 3 gender-bucket totals (gender head only) + 1 age-bucket total (age head) + 1 mood-bucket total (mood head)</li>
+        <li><strong>Feature vector</strong>441 base + 33 perceptual (<a href="lgb-perceptual">documented here</a>) + 3 gender-bucket totals (gender head only) + 1 age-bucket total (age head) + 1 mood-bucket total (mood head)</li>
         <li><strong>Model</strong>Single LightGBM, identical config to the Single-LGB baseline</li>
         <li><strong>Bucket grid</strong>8x8x8 over RGB, 32-wide buckets, centres at (16, 48, ..., 240) per channel</li>
         <li><strong>Per-session delta values</strong>+0.1 * 16 * 3 / 21 ~ +0.229 per pick, -0.1 per round-1 offered-but-not-picked colour</li>
@@ -272,12 +272,12 @@
       <div class="project-links">
         <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/color-buckets" target="_blank" rel="noopener">Source on GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/color-buckets/train.py" target="_blank" rel="noopener">train.py</a>
-        <a href="lgb-perceptual.html">Perceptual features (intermediate experiment)</a>
-        <a href="../info/features.html">441-feature base pipeline</a>
+        <a href="lgb-perceptual">Perceptual features (intermediate experiment)</a>
+        <a href="../info/features">441-feature base pipeline</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
   </main>
 
   <footer class="site-footer">

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LightGBM + perseptuelle features · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Enkel LightGBM med 33 ekstra perseptuelle features (LAB-koding, kjønnsprototype-avstander, spørsmålsvanskelighet) på color polygraph-datasettet." />
-  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-perceptual.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-perceptual" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -70,7 +70,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+    <a href="../" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -193,7 +193,7 @@
     <section class="project-section">
       <h2>Konfigurasjon</h2>
       <ul class="config-list">
-        <li><strong>Feature-vektor</strong>441 base-features (<a href="../info/features.html">full liste</a>) + 33 perseptuelle ekstra</li>
+        <li><strong>Feature-vektor</strong>441 base-features (<a href="../info/features">full liste</a>) + 33 perseptuelle ekstra</li>
         <li><strong>Modell</strong>Enkel LightGBM, identisk konfig som enkelt-LGB-basislinje-raden</li>
         <li><strong>Hyperparametere</strong>n_estimators=800/1000, num_leaves=63, learning_rate=0.03, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5, min_child_samples=20, reg_lambda=1.0</li>
         <li><strong>Formål</strong>binary (kjønn) · regression / L2 (alder, humør)</li>
@@ -206,11 +206,11 @@
       <div class="project-links">
         <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/extra-features" target="_blank" rel="noopener">Kildekode på GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/extra-features/train.py" target="_blank" rel="noopener">train.py</a>
-        <a href="../info/features.html">441-feature basis-pipeline</a>
+        <a href="../info/features">441-feature basis-pipeline</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+    <a href="../" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
   </main>
 
   <footer class="site-footer">

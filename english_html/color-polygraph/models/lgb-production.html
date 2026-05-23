@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LightGBM (production) · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="The deployed production model: full-size LightGBM + bucket scores (the leaderboard champion config). Metrics from a stratified 710-row random hold-out; the deployed boosters are then re-fit on all 6,710 valid sessions. Gender AUC 0.886, age MAE 6.48, mood MAE 8.76." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-production.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-production" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -63,7 +63,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -77,7 +77,7 @@
 
     <p class="project-lede">
       The model the live survey actually uses: the leaderboard's
-      <a href="lgb-buckets.html">LightGBM + bucket scores</a> at its full
+      <a href="lgb-buckets">LightGBM + bucket scores</a> at its full
       configuration (800 trees for gender, 1,000 for age and mood; num_leaves=63;
       lr=0.03). Training is a two-pass procedure - first an honest evaluation
       pass on a stratified 6,000 / 710 random split, then a deployment pass
@@ -158,12 +158,12 @@
       <h2>Project links</h2>
       <div class="project-links">
         <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/lgb-production" target="_blank" rel="noopener">Source on GitHub</a>
-        <a href="lgb-buckets.html">Full-size LightGBM + bucket scores</a>
-        <a href="../survey.html">Live survey</a>
+        <a href="lgb-buckets">Full-size LightGBM + bucket scores</a>
+        <a href="../survey">Live survey</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
   </main>
 
   <footer class="site-footer">

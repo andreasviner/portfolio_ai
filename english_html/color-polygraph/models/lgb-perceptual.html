@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LightGBM + perceptual features · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Single LightGBM with 33 added perceptual features (LAB encoding, gender-prototype distances, question difficulty) — current gender-AUC champion on the color polygraph leaderboard." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-perceptual.html" />
+  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lgb-perceptual" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -70,7 +70,7 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -194,7 +194,7 @@
     <section class="project-section">
       <h2>Configuration</h2>
       <ul class="config-list">
-        <li><strong>Feature vector</strong>441 base features (<a href="../info/features.html">full list</a>) + 33 perceptual extras</li>
+        <li><strong>Feature vector</strong>441 base features (<a href="../info/features">full list</a>) + 33 perceptual extras</li>
         <li><strong>Model</strong>Single LightGBM, identical config to the Single-LGB baseline row</li>
         <li><strong>Hyperparameters</strong>n_estimators=800/1000, num_leaves=63, learning_rate=0.03, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5, min_child_samples=20, reg_lambda=1.0</li>
         <li><strong>Objective</strong>binary (gender) · regression / L2 (age, mood)</li>
@@ -207,11 +207,11 @@
       <div class="project-links">
         <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/extra-features" target="_blank" rel="noopener">Source on GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/extra-features/train.py" target="_blank" rel="noopener">train.py</a>
-        <a href="../info/features.html">441-feature base pipeline</a>
+        <a href="../info/features">441-feature base pipeline</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../" class="project-back">Back to AI architectures leaderboard</a>
   </main>
 
   <footer class="site-footer">

@@ -641,7 +641,7 @@
           '<a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">Mer om prosjektet</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
-          window.location.href = 'survey.html';
+          window.location.href = 'survey';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
           const shareData = {
@@ -678,7 +678,7 @@
         data = await getJson('/survey/' + encodeURIComponent(id));
       } catch (err) {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><p class="rv-error">Kunne ikke laste resultater for denne ID-en.<br><a href="survey.html">Ta surveyet</a></p></div>';
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Kunne ikke laste resultater for denne ID-en.<br><a href="survey">Ta surveyet</a></p></div>';
         });
         return;
       }
@@ -881,7 +881,7 @@
         const s = document.createElement('div');
         s.className = 'rv-slide';
         wrap.appendChild(s);
-        s.innerHTML = '<div class="rv-center"><p class="rv-error">Ingen surveydata funnet.<br><a href="survey.html">Ta surveyet</a></p></div>';
+        s.innerHTML = '<div class="rv-center"><p class="rv-error">Ingen surveydata funnet.<br><a href="survey">Ta surveyet</a></p></div>';
         requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-current')));
         return;
       }
