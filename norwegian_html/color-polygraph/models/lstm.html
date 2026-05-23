@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LSTM · Color Polygraph · Andreas Lindeman</title>
-  <meta name="description" content="The smallest sequence model on the color polygraph leaderboard - one LSTM layer, 48 hidden units, multi-task." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/lstm.html" />
+  <meta name="description" content="Den minste sekvensmodellen på color polygraph-leaderboardet – ett LSTM-lag, 48 skjulte enheter, multi-task." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lstm.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -26,35 +26,35 @@
 </head>
 <body>
 
-  <nav class="site-nav" aria-label="Primary">
-    <a href="https://andreaslindeman.com/" class="brand">
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
       <span class="brand-mark">AL</span>
       <span class="brand-name">Andreas Lindeman</span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
     </button>
     <ul id="nav-links-list" class="nav-links">
-      <li><a href="https://andreaslindeman.com/#about">About</a></li>
-      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
-      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
-      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
     </ul>
-    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.no" href="https://ai.andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
       <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
-      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
     </a>
   </nav>
   <script>
     (function(){
       var s=document.querySelector('.lang-switch');
       if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
-      var nav=document.querySelector('.site-nav'), btn=document.querySelector('.nav-toggle');
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
       if(btn&&nav){
-        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open menu');}
-        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Close menu':'Open menu');});
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
         nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
         document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
         document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
@@ -63,40 +63,40 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
       <span class="sep"></span>
-      <span>Color polygraph · architecture detail</span>
+      <span>Color polygraph · arkitekturdetalj</span>
       <span class="sep"></span>
-      <span class="status-tag ongoing">Sequence model · smallest</span>
+      <span class="status-tag ongoing">Sekvensmodell · minst</span>
     </div>
 
     <h1 class="project-title"><em>LSTM</em></h1>
 
     <p class="project-lede">
-      The smallest sequence model on the board. One LSTM layer, 48 hidden units,
-      one shared trunk into three heads. The point is to anchor what 0.7 GBs of
-      parameters can extract from the raw 21-step session sequence before the
-      bigger sequence models are allowed to compete.
+      Den minste sekvensmodellen på leaderboardet. Ett LSTM-lag, 48 skjulte enheter,
+      én felles stamme inn i tre hoder. Poenget er å forankre hva 0.7 GB parametere
+      kan trekke ut av den rå 21-stegs sesjonssekvensen før de større sekvensmodellene
+      får konkurrere.
     </p>
 
     <section class="project-section">
-      <h2>Scores</h2>
+      <h2>Resultater</h2>
       <div class="model-scores">
         <div class="card">
-          <div class="label">Gender AUC</div>
+          <div class="label">Kjønn AUC</div>
           <div class="value">0.781</div>
           <div class="meta">5-fold StratifiedKFold</div>
         </div>
         <div class="card">
-          <div class="label">Age MAE</div>
+          <div class="label">Alder MAE</div>
           <div class="value">8.64</div>
-          <div class="meta">years</div>
+          <div class="meta">år</div>
         </div>
         <div class="card">
-          <div class="label">Mood MAE</div>
+          <div class="label">Humør MAE</div>
           <div class="value">11.18</div>
           <div class="meta">0..60</div>
         </div>
@@ -104,49 +104,48 @@
     </section>
 
     <section class="project-section">
-      <h2>How it works</h2>
+      <h2>Slik fungerer det</h2>
       <p>
-        A single LSTM layer reads the 38-dim per-step sequence (slightly smaller
-        per-step encoding than the BiGRU and transformer: no per-step side info).
-        The last hidden state becomes the session summary, gets pushed through a
-        48-unit MLP trunk, then into three linear heads. No attention pooling, no
-        side-feature fusion, no fancy training schedule.
+        Et enkelt LSTM-lag leser den 38-dims per-steg-sekvensen (litt mindre per-steg-
+        koding enn BiGRU og transformer: ingen per-steg sideinformasjon). Den siste
+        skjulte tilstanden blir sesjonsoppsummeringen, skyves gjennom en 48-enhets
+        MLP-stamme, deretter inn i tre lineære hoder. Ingen attention-pooling, ingen
+        sidefeature-fusjon, ingen avansert treningsplan.
       </p>
       <p>
-        Loses to the BiGRU on every column but stays within 0.05 MAE on the
-        regression heads, which is the small-model story this row is supposed to
-        tell: extra capacity in the sequence family helps gender, barely helps
-        regression.
+        Taper mot BiGRU på alle kolonner, men holder seg innen 0.05 MAE på
+        regresjonshodene – det er den lille-modell-historien denne raden er ment å
+        fortelle: ekstra kapasitet i sekvensserien hjelper kjønn, knapt regresjon.
       </p>
     </section>
 
     <section class="project-section">
-      <h2>Configuration</h2>
+      <h2>Konfigurasjon</h2>
       <ul class="config-list">
-        <li><strong>Hidden size</strong>48</li>
-        <li><strong>Layers</strong>1</li>
-        <li><strong>Per-step input</strong>38 dims (no step-type one-hot vs BiGRU's 40)</li>
-        <li><strong>Pooling</strong>Last hidden state</li>
+        <li><strong>Skjult størrelse</strong>48</li>
+        <li><strong>Lag</strong>1</li>
+        <li><strong>Per-steg input</strong>38 dims (ingen stegtype one-hot vs BiGRUs 40)</li>
+        <li><strong>Pooling</strong>Siste skjulte tilstand</li>
         <li><strong>Dropout</strong>0.4</li>
-        <li><strong>Optimiser</strong>Adam, lr 1e-3, cosine decay over 100 epochs</li>
-        <li><strong>CV</strong>5-fold StratifiedKFold on gender, seed 42</li>
+        <li><strong>Optimerer</strong>Adam, lr 1e-3, cosinusforfall over 100 epoker</li>
+        <li><strong>CV</strong>5-fold StratifiedKFold på kjønn, seed 42</li>
       </ul>
     </section>
 
     <section class="project-section">
-      <h2>Project links</h2>
+      <h2>Prosjektlenker</h2>
       <div class="project-links">
-        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/seq" target="_blank" rel="noopener">Source on GitHub</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/seq" target="_blank" rel="noopener">Kildekode på GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/seq/train_seq.py" target="_blank" rel="noopener">train_seq.py</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
   </main>
 
   <footer class="site-footer">
     <span>© <span id="year"></span> Andreas Lindeman</span>
-    <span class="footer-meta">Built by hand · No frameworks · Hosted on GitHub Pages</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
   </footer>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stablet GBM-ensemble · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Nåværende mester på color polygraph-leaderboardet: LightGBM + XGBoost + CatBoost + HistGB + ExtraTrees, blandet med en logistisk eller L1 meta-learner." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/stacked-gbm.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    .model-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .model-scores .card { border: 1px solid var(--hairline); border-radius: 6px; padding: 14px 16px; background: var(--surface); }
+    .model-scores .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-mute); }
+    .model-scores .value { font-family: var(--serif); font-style: italic; font-variation-settings: "opsz" 36; font-size: 28px; margin-top: 6px; color: var(--text); }
+    .model-scores .meta { font-family: var(--mono); font-size: 11px; color: var(--text-mute); margin-top: 4px; }
+    .model-scores .best { color: var(--hobby); }
+    .config-list { list-style: none; padding: 0; margin: 0; }
+    .config-list li { font-family: var(--mono); font-size: 12px; color: var(--text); padding: 8px 0; border-bottom: 1px dashed var(--hairline); }
+    .config-list li:last-child { border-bottom: none; }
+    .config-list strong { color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; display: inline-block; min-width: 140px; margin-right: 8px; }
+    @media (max-width: 720px) { .model-scores { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>Color polygraph · arkitekturdetalj</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Best på alle kolonner</span>
+    </div>
+
+    <h1 class="project-title">Stablet <em>GBM-ensemble</em></h1>
+
+    <p class="project-lede">
+      Fem gradient-boosting-familier – LightGBM, XGBoost, CatBoost, HistGradientBoosting
+      og ExtraTrees – hver med sitt eget tilfeldige søk, deretter blandes topp-K
+      out-of-fold-prediksjoner fra hver familie av en meta-learner. Beste skår på
+      alle kolonner i leaderboardet.
+    </p>
+
+    <section class="project-section">
+      <h2>Resultater</h2>
+      <div class="model-scores">
+        <div class="card">
+          <div class="label">Kjønn AUC</div>
+          <div class="value best">0.877</div>
+          <div class="meta">5-fold StratifiedKFold</div>
+        </div>
+        <div class="card">
+          <div class="label">Alder MAE</div>
+          <div class="value best">6.61</div>
+          <div class="meta">år, område 6 til 68</div>
+        </div>
+        <div class="card">
+          <div class="label">Humør MAE</div>
+          <div class="value best">8.96</div>
+          <div class="meta">0 = glad, 60 = trist</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="project-section">
+      <h2>Slik fungerer det</h2>
+      <p>
+        Hver basisfamilie får et tilfeldig søk over et stort hyperparameterrom
+        (learning rate, tredybde, regularisering, kolonne-subsampling og mer).
+        For hvert forsøk gjør skriptet en full 5-fold CV på den 441-feature-konstruerte
+        vektoren og lagrer out-of-fold-prediksjonene i en CSV. Når alle forsøk er ferdige,
+        refitttes topp-K konfigurasjoner per familie (slik at vi har en OOF-prediksjonstabell
+        per topp-K-modell) og stables med en meta-learner.
+      </p>
+      <p>
+        Meta-learneren gjør stille mye arbeid. For kjønn er det en logistisk regresjon
+        med intern CV over regulariseringsstyrken. For regresjonshodene er det et
+        ikke-negativt blenderi som minimerer L1-tap. Opprinnelig var dette en RidgeCV,
+        som stille blåste alder-MAE fra 6.61 til 7.43: base-LightGBM- og XGBoost-modellene
+        ble trent med et MAE-formål, slik at OOF-prediksjonene deres er betingede medianer,
+        og et minste-kvadraters-fit dro blenden mot det betingede gjennomsnittet. Bytte
+        til en L1-meta-learner gjenvant de manglende 0.8 MAE.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Konfigurasjon</h2>
+      <ul class="config-list">
+        <li><strong>Feature-vektor</strong>441 konstruerte features per sesjon (<a href="../info/features.html">full oversikt</a>)</li>
+        <li><strong>Basisfamilier</strong>LightGBM, XGBoost, CatBoost, HistGradientBoosting, ExtraTrees</li>
+        <li><strong>Forsøk (kjønn)</strong>578 LightGBM + 250 XGBoost + 28 CatBoost forsøk</li>
+        <li><strong>Forsøk (alder)</strong>40 LightGBM + 30 XGBoost + 8 HistGradientBoosting forsøk</li>
+        <li><strong>Forsøk (humør)</strong>30 LightGBM + 20 XGBoost forsøk</li>
+        <li><strong>Topp-K per familie</strong>5 LGB, 4 XGB, 3 CAT, 3 HGB, 2 ET</li>
+        <li><strong>Meta-learner</strong>LogisticRegressionCV (kjønn) · ikke-negativ L1-minimering (alder, humør)</li>
+        <li><strong>CV</strong>5-fold StratifiedKFold for kjønn, 5-fold KFold for alder og humør, seed 42</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Prosjektlenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/gbm-stack" target="_blank" rel="noopener">Kildekode på GitHub</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/gbm-stack/overnight_search.py" target="_blank" rel="noopener">overnight_search.py</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/gbm-stack/rescue_target.py" target="_blank" rel="noopener">rescue_target.py</a>
+      </div>
+    </section>
+
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

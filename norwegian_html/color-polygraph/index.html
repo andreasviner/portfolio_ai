@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-arkitekturer · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Leaderboard over modellarkitekturene jeg har reimplementert på 2020 color polygraph-datasettet: stablet gradient boosting, transformer, BiGRU, LSTM og lineære basislinjer." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    .lb-wrap {
+      margin: 8px 0 16px;
+      overflow-x: auto;
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      min-width: 0;
+    }
+    .lb-table thead th {
+      text-align: left;
+      padding: 14px 16px;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      border-bottom: 1px solid var(--hairline);
+      background: rgba(255, 255, 255, 0.02);
+      white-space: nowrap;
+    }
+    .lb-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px dashed var(--hairline);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    .lb-table tbody tr:last-child td { border-bottom: none; }
+    .lb-table tbody tr:hover td { background: rgba(255, 255, 255, 0.015); }
+    .lb-arch {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 16px;
+      color: var(--text);
+      font-variation-settings: "opsz" 36;
+    }
+    .lb-arch-link {
+      color: var(--text);
+      border-bottom: 1px dotted var(--hairline);
+      transition: color .2s, border-color .2s;
+    }
+    .lb-arch-link:hover {
+      color: var(--hobby);
+      border-color: var(--hobby);
+    }
+    .lb-arch-plain {
+      color: var(--text-mute);
+    }
+    .lb-sub {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      letter-spacing: 0.02em;
+      font-style: normal;
+    }
+    .lb-score {
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+    .lb-score-best { color: var(--hobby); }
+    .lb-na {
+      color: var(--text-dim);
+    }
+    .lb-folder a {
+      color: var(--text-mute);
+      border-bottom: 1px dotted var(--hairline);
+      transition: color .2s, border-color .2s;
+    }
+    .lb-folder a:hover {
+      color: var(--text);
+      border-color: var(--text-mute);
+    }
+    .lb-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      letter-spacing: 0.02em;
+      margin-top: 8px;
+    }
+    .lb-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0 0 18px;
+    }
+    .lb-legend .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      vertical-align: 1px;
+      margin-right: 6px;
+      background: var(--hobby);
+    }
+    .lb-method-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px;
+    }
+    .lb-method-list li {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      letter-spacing: 0.02em;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--hairline);
+    }
+    .lb-method-list li:last-child { border-bottom: none; }
+    .lb-method-list strong {
+      color: var(--text-mute);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 10px;
+      display: inline-block;
+      min-width: 100px;
+      margin-right: 8px;
+    }
+    .lc-figure {
+      margin: 18px 0 8px;
+      padding: 0;
+    }
+    .lc-figure img {
+      display: block;
+      width: 100%;
+      max-width: 760px;
+      height: auto;
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .lc-figure figcaption {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      letter-spacing: 0.02em;
+      margin-top: 10px;
+      max-width: 760px;
+    }
+    @media (max-width: 720px) {
+      .lb-table { font-size: 12px; }
+      .lb-table thead th, .lb-table tbody td { padding: 10px 12px; }
+      .lb-arch { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back">Tilbake til Color Polygraph</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>2026 reimplementasjoner</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Pågående</span>
+    </div>
+
+    <h1 class="project-title">AI <em>arkitekturer</em></h1>
+
+    <p class="project-lede">
+      Seks år etter den originale color polygraph holder jeg på å bygge modellen om
+      igjen for å se hvordan de samme 6 710 sesjonene ser ut under forskjellige
+      arkitekturer. Denne siden sporer dem. Hver rad er én arkitektur, hver arkitektur
+      lever i sin egen mappe under prosjektet, og alle ble trent med den samme
+      5-fold kryss-valideringen slik at tallene er sammenlignbare.
+    </p>
+
+    <section class="project-section">
+      <h2>Leaderboard</h2>
+
+      <p class="lb-legend">
+        <span><span class="dot"></span> beste skår per kolonne</span>
+        <span>kjønn = ROC-AUC, høyere er bedre</span>
+        <span>alder / humør = MAE, lavere er bedre</span>
+      </p>
+
+      <div class="lb-wrap">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Arkitektur</th>
+              <th>Kjønn AUC</th>
+              <th>Alder MAE</th>
+              <th>Humør MAE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-production.html"><span class="lb-arch">LightGBM (produksjon)</span></a></td>
+              <td class="lb-score lb-score-best">0.886</td>
+              <td class="lb-score lb-score-best">6.48</td>
+              <td class="lb-score lb-score-best">8.76</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-buckets.html"><span class="lb-arch">LightGBM + bucket-skårer</span></a></td>
+              <td class="lb-score">0.881</td>
+              <td class="lb-score">6.89</td>
+              <td class="lb-score">8.91</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-perceptual.html"><span class="lb-arch">LightGBM + perseptuelle features</span></a></td>
+              <td class="lb-score">0.878</td>
+              <td class="lb-score">6.92</td>
+              <td class="lb-score">8.87</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/stacked-gbm.html"><span class="lb-arch">Stablet GBM-ensemble</span></a></td>
+              <td class="lb-score">0.877</td>
+              <td class="lb-score">6.61</td>
+              <td class="lb-score">8.96</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/baselines.html"><span class="lb-arch">Enkel LightGBM</span></a></td>
+              <td class="lb-score">0.876</td>
+              <td class="lb-score">6.95</td>
+              <td class="lb-score">8.85</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-search.html"><span class="lb-arch">LightGBM tilfeldig søk</span></a></td>
+              <td class="lb-score">0.875</td>
+              <td class="lb-score">6.63</td>
+              <td class="lb-score">9.17</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/baselines.html"><span class="lb-arch">Enkel XGBoost</span></a></td>
+              <td class="lb-score">0.875</td>
+              <td class="lb-score">7.14</td>
+              <td class="lb-score">9.08</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/hybrid-blend.html"><span class="lb-arch">Hybrid-blend</span></a></td>
+              <td class="lb-score">0.875</td>
+              <td class="lb-score">6.61</td>
+              <td class="lb-score">8.96</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/baselines.html"><span class="lb-arch">HistGradientBoosting</span></a></td>
+              <td class="lb-score">0.867</td>
+              <td class="lb-score">7.16</td>
+              <td class="lb-score">9.27</td>
+            </tr>
+            <tr>
+              <td><span class="lb-arch lb-arch-plain">MLP (256, 128, 64)</span></td>
+              <td class="lb-score">0.823</td>
+              <td class="lb-score">8.41</td>
+              <td class="lb-score">10.84</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/bigru.html"><span class="lb-arch">BiGRU</span></a></td>
+              <td class="lb-score">0.812</td>
+              <td class="lb-score">8.59</td>
+              <td class="lb-score">11.18</td>
+            </tr>
+            <tr>
+              <td><span class="lb-arch lb-arch-plain">Lineær (logistisk / ridge)</span></td>
+              <td class="lb-score">0.810</td>
+              <td class="lb-score">8.77</td>
+              <td class="lb-score">11.35</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/transformer.html"><span class="lb-arch">Transformer</span></a></td>
+              <td class="lb-score">0.797</td>
+              <td class="lb-score">8.88</td>
+              <td class="lb-score">11.29</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lstm.html"><span class="lb-arch">LSTM</span></a></td>
+              <td class="lb-score">0.781</td>
+              <td class="lb-score">8.64</td>
+              <td class="lb-score">11.18</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="lb-note">
+        Sist oppdatert: 2026-05-23. Lenkede arkitekturnavn åpner en per-modell-detaljside
+        i <a href="models/" class="lb-folder">models/</a>. 441-feature-engineering-rørledningen
+        er dokumentert på
+        <a href="info/features.html" class="lb-folder">info/features.html</a>.
+        Kjønnsmesteren legger til 33 perseptuelle ekstra pluss 5 mål-enkodede
+        fargebucket-skårer – se
+        <a href="models/lgb-buckets.html" class="lb-folder">LightGBM + bucket-skårer</a>
+        for konstruksjonen.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Metode</h2>
+      <ul class="lb-method-list">
+        <li><strong>Datasett</strong>6 710 rensede sesjoner, den samme eksporten 2020 dybdeside-siden bruker</li>
+        <li><strong>Mål</strong>kjønn (binær), alder (regresjon, 6 til 68), humør (regresjon, 0 = glad, 60 = trist)</li>
+        <li><strong>Validering</strong>5-fold kryss-validering, StratifiedKFold for kjønn, KFold for alder og humør (sekvensmodeller stratifiserer på kjønn for multi-task-oppsettet)</li>
+        <li><strong>Metrikk</strong>ROC-AUC for kjønn, gjennomsnittlig absolutt feil for de to regresjonstallene</li>
+        <li><strong>Seed</strong>42 overalt</li>
+        <li><strong>Features</strong>Tremodeller bruker den 441-feature-konstruerte vektoren (<a href="info/features.html">forklart her</a>). Sekvensmodeller leser den rå 21-stegs per-spørsmål-strømmen slik at de kan lære sin egen representasjon</li>
+        <li><strong>Meta-blend</strong>Logistisk regresjon for kjønnsstakken; ikke-negativ L1-tapminimering for alder- og humørstakkene slik at mediankalibrerte baselearners ikke dras mot det betingede gjennomsnittet av en ridge-fitting</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Ville mer data bryte 0.9 på kjønn?</h2>
+      <p>
+        Tilfeldig 5-fold CV hadde alle kjønnsmodelleringsarkitekturer kjørende fast
+        rundt 0.88 AUC, noe som fikk datasettet til å virke signalbundet snarere enn
+        modellbundet. Et nytt forsøk på kjønnsmodellering – LAB-målkoding, per-spørsmål
+        "jenteaktigst-av-4" besluttsomhets-features, multi-familie bag av LightGBM +
+        XGBoost + CatBoost med en logistisk stacker – landet på det samme 0.882 OOF AUC.
+        For å finne ut om 6 710 sesjoner faktisk er <em>nok</em>, holdt jeg ut det samme
+        stratifiserte 710-rads tilfeldige utvalget som produksjonstreneren bruker som
+        evalueringssett, og refittet den leaderboard-vinnende
+        <a href="models/lgb-buckets.html">LightGBM + bucket-skårer</a>-modellen
+        ved økende brøkdeler av den gjenværende 6 000-sesjons-treningspoolen:
+        500, 1 000, 1 500, ..., 6 000 sesjoner, fem tilfeldige stratifiserte-på-kjønn
+        delutvalg per størrelse.
+      </p>
+      <figure class="lc-figure">
+        <img src="https://ai.andreaslindeman.com/color-polygraph/info/learning_curve.svg" alt="Læringskurve: kjønn ROC-AUC på det samme stratifiserte 710-rads tilfeldige hold-out som produksjonen bruker, ettersom treningspoolstørrelsen vokser fra 500 til 6 000 sesjoner i trinn på 500. Gjennomsnittslinjen stiger fra 0.79 ved n=500 til 0.885 ved n=6000, med avtagende men ikke flat stigningstall." />
+        <figcaption>
+          Gjennomsnitt (linje) og min/maks over 5 stratifiserte delutvalg per
+          størrelse. Den stiplede linjen markerer leaderboardets 5-fold CV-kjønnsmester
+          (0.881); den prikket linjen markerer 0.900-målet. Det høyeste punktet
+          (n=6 000, seed=42, AUC 0.886) er det samme tallet den utrullede
+          produksjonsmodellen rapporterer på leaderboardet.
+        </figcaption>
+      </figure>
+      <p>
+        Validering er det samme stratifiserte tilfeldige hold-out som produksjonsraden
+        bruker, slik at kurvens høyeste punkt er direkte sammenlignbart med den
+        utrullede modellen. Gjennomsnittlig AUC klatrer bratt fra 0.79 ved n=500,
+        krysser 5-fold CV-mesteren (0.881) rundt n=5 000, og når 0.885
+        ved n=6 000 – fremdeles stigende, men stigningstallet har avtatt fra ~+0.03
+        per 1 000 sesjoner tidlig i kurven til ~+0.005 per 1 000 mot slutten.
+        Lineær ekstrapolasjon antyder at ytterligere 2 000–3 000 sesjoner ville
+        bringe overskriften til 0.90 hvis stigningstallet holder seg, men kurvens
+        form levner rom for at modellen kan nå et platå tidligere. Uansett er
+        signalet ikke uttømt ennå: mer data gir fremdeles ærlig AUC.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Hvorfor så mange arkitekturer</h2>
+      <p>
+        Tabellbasert gradient boosting vinner nesten alltid på små strukturerte data,
+        og color polygraph er små strukturerte data. Transformeren og de rekurrente
+        modellene er der for å teste om per-spørsmåls-<em>rekkefølgen</em> og
+        tidsstyringen bærer et signal som de konstruerte featurene taper. Svaret
+        er foreløpig stort sett nei: alle sekvensmodeller mister 6 til 9 AUC-poeng
+        på kjønn og 2 til 3 MAE-poeng på alder, og hybriden som blander OOF-
+        prediksjonene deres med GBM-stakken lander med vekt ~1.0 på trærne og ~0
+        på resten.
+      </p>
+      <p>
+        Hver kolonne har nå en annen vinner. Det fulle stakkede ensemblet eier
+        fremdeles det vanskeligste målet (aldersregresjon). Den billig-tunede standard
+        enkelt-LightGBM er best på humør, fordi tilfeldig søk overfitter på et
+        lavt-signal-mål. En enkelt LightGBM med 33 perseptuelle ekstra pluss 5
+        mål-enkodede fargebucket-skårer utkonkurrerer alle andre arkitekturer på
+        kjønn. Bucket-skårene er den store gevinsten: et 512-cellers RGB-gitter
+        der hver celle holder et gjennomsnittlig "jenteaktighet" / "gutteaktighet"-delta
+        beregnet over treningsbrukere, slått opp trilineært per valg. Det signerte
+        totalet av disse oppslagene blir den enkelt-feature med høyest gain i hele
+        vektoren.
+      </p>
+      <p>
+        Basislinjemodellene finnes for å holde resten av leaderboardet ærlig. Hvis
+        en logistisk regresjon kommer innen ett prosentpoeng av det stakkede ensemblet,
+        tjener ikke ensemblet sin plass. Her tjener det fulle ensemblet omtrent
+        0.3 AUC, 0.5 MAE på alder og 0.15 MAE på humør over de håndtunte basislinjemodellene
+        – en reell men beskjeden gevinst.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Prosjektlenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training" target="_blank" rel="noopener">Alle arkitekturer på GitHub</a>
+        <a href="info/features.html">Feature engineering-pipeline (441 features forklart)</a>
+        <a href="https://github.com/andreasviner/portfolio/blob/main/main/projects_data/2020-color-polygraph/new_code/treat_data.py" target="_blank" rel="noopener">Datarenser (treat_data.py)</a>
+      </div>
+    </section>
+
+    <a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back">Tilbake til Color Polygraph</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

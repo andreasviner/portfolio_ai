@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LightGBM + perseptuelle features · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Enkel LightGBM med 33 ekstra perseptuelle features (LAB-koding, kjønnsprototype-avstander, spørsmålsvanskelighet) på color polygraph-datasettet." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-perceptual.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    .model-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .model-scores .card { border: 1px solid var(--hairline); border-radius: 6px; padding: 14px 16px; background: var(--surface); }
+    .model-scores .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-mute); }
+    .model-scores .value { font-family: var(--serif); font-style: italic; font-variation-settings: "opsz" 36; font-size: 28px; margin-top: 6px; color: var(--text); }
+    .model-scores .meta { font-family: var(--mono); font-size: 11px; color: var(--text-mute); margin-top: 4px; }
+    .model-scores .best { color: var(--hobby); }
+    .config-list { list-style: none; padding: 0; margin: 0; }
+    .config-list li { font-family: var(--mono); font-size: 12px; color: var(--text); padding: 8px 0; border-bottom: 1px dashed var(--hairline); }
+    .config-list li:last-child { border-bottom: none; }
+    .config-list strong { color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; display: inline-block; min-width: 140px; margin-right: 8px; }
+    .imp-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; margin: 12px 0; }
+    .imp-table th { text-align: left; padding: 10px 12px; font-weight: 500; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-mute); border-bottom: 1px solid var(--hairline); background: rgba(255,255,255,0.02); white-space: nowrap; }
+    .imp-table td { padding: 10px 12px; border-bottom: 1px dashed var(--hairline); }
+    .imp-table tr:last-child td { border-bottom: none; }
+    .imp-table .gain { font-variant-numeric: tabular-nums; color: var(--text); }
+    .imp-table .rank { font-variant-numeric: tabular-nums; color: var(--text-mute); }
+    @media (max-width: 720px) { .model-scores { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>Color polygraph · arkitekturdetalj</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Beste kjønn-AUC, 2026</span>
+    </div>
+
+    <h1 class="project-title">LightGBM <em>+ perseptuelle features</em></h1>
+
+    <p class="project-lede">
+      Samme enkle LightGBM-konfigurasjon som enkelt-LGB-basislinjen, men med 33
+      ekstra perseptuelt-bevisste features boltet på den eksisterende 441-feature-vektoren.
+      De nye featurene er i stor grad LAB-romkodinger og kjønnsprototype-avstander.
+      Én enkelt tre-av-trær slår den fulle stakkede ensemblen på kjønn-AUC med dette
+      feature-settet.
+    </p>
+
+    <section class="project-section">
+      <h2>Resultater</h2>
+      <div class="model-scores">
+        <div class="card">
+          <div class="label">Kjønn AUC</div>
+          <div class="value best">0.878</div>
+          <div class="meta">+0.002 vs 441-feature enkelt LGB</div>
+        </div>
+        <div class="card">
+          <div class="label">Alder MAE</div>
+          <div class="value">6.92</div>
+          <div class="meta">-0.03 vs 441-feature enkelt LGB</div>
+        </div>
+        <div class="card">
+          <div class="label">Humør MAE</div>
+          <div class="value">8.87</div>
+          <div class="meta">+0.02 vs 441-feature enkelt LGB</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="project-section">
+      <h2>Hvorfor dette er på leaderboardet</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Den originale 441-feature-vektoren koder farger i RGB og HSL. Ingen av disse
+        er perseptuelt uniforme – to farger som ser like forskjellige ut for et menneske
+        kan ligge på veldig ulike avstander i modellens input. LAB fikser det, og
+        gradientboostede trær kan ikke konstruere en ikke-lineær sRGB-til-LAB-transform
+        fra akseparallelle splitter, så den nye kodingen <em>tilfører</em> genuint
+        informasjon modellen ikke kunne slutte seg til.
+      </p>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Oppå LAB la jeg til en "kjønnsprototype"-avstand: ta noen stereotypisk
+        jentekodet farger (lys rosa, sterk rosa, lys lilla, rød) og guttekodet farger
+        (sterk blå, himmelblå, grønn, mørk grå), gjennomsnittes hver gruppe i LAB, og
+        beregn Delta-E fra brukerens valg til hvert prototypesenter. Dette er den typen
+        forkunnskap et tre ikke kan finne opp på egenhånd, selv med rike features.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>De 33 nye featurene</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Fem blokker med features, alle lagt til base-441-vektoren:
+      </p>
+      <ul class="config-list">
+        <li><strong>Siste valg LAB</strong>L*, a*, b* til den valgte fargen (3 features)</li>
+        <li><strong>r1 LAB-statistikk</strong>Gjennomsnitt og std av L*, a*, b* over de 16 runde-1-vinnerne (6)</li>
+        <li><strong>r2 LAB-statistikk</strong>Gjennomsnitt og std av L*, a*, b* over de 4 runde-2-vinnerne (6)</li>
+        <li><strong>Tilbudt LAB-statistikk</strong>Gjennomsnitt og std av L*, a*, b* over alle 64 tilbudte farger (6)</li>
+        <li><strong>Kjønnsprototype</strong>Delta-E fra siste / r1-valg til jente-prototype og gutte-prototype-senter, pluss log-ratio av avstander (5)</li>
+        <li><strong>Spørsmålsvanskelighet</strong>Intragruppe tilbudt diversitet (gjennomsnitt og std), pluss valgt-vs-avvist delta normalisert etter gruppespredning (4)</li>
+        <li><strong>Tidsavvik</strong>Andel hastede (under 1s) og dvelte (over 7s) spørsmål, variasjonskoeffisient for tidstakinger (3)</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Hvilke nye features faktisk teller</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Gain-basert viktighet fra en full-data LightGBM-fitting på kjønn. Rangeringer
+        er av alle 474 features. Stjerne markerer nye.
+      </p>
+      <table class="imp-table">
+        <thead>
+          <tr>
+            <th>Rangering</th>
+            <th>Feature</th>
+            <th>Gain</th>
+            <th>Notat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="rank">★ 1</td><td>r1_lab_b_std</td><td class="gain">10 689</td><td>blå-gul spredning over r1-valg</td></tr>
+          <tr><td class="rank">2</td><td>sel_r1_dr</td><td class="gain">4 045</td><td>r1 gjennomsnittlig rød - tilbudt gjennomsnittlig rød</td></tr>
+          <tr><td class="rank">★ 3</td><td>r1_to_girl_proto_mean</td><td class="gain">3 234</td><td>gjennomsnittlig Delta-E fra r1 til jente-prototype</td></tr>
+          <tr><td class="rank">★ 4</td><td>r1_relative_decisive_mean</td><td class="gain">3 102</td><td>besluttsomhet / gruppevanskelighet</td></tr>
+          <tr><td class="rank">5</td><td>r1_l_mean</td><td class="gain">2 769</td><td>r1 gjennomsnittlig lyshet (HSL)</td></tr>
+          <tr><td class="rank">★ 10</td><td>off_lab_b_std</td><td class="gain">997</td><td>tilbudte farger b*-spredning</td></tr>
+          <tr><td class="rank">★ 17</td><td>r1_relative_decisive_std</td><td class="gain">661</td><td>variabilitet av relativ besluttsomhet</td></tr>
+          <tr><td class="rank">★ 20</td><td>r1_lab_L_mean</td><td class="gain">618</td><td>r1 gjennomsnittlig lyshet (LAB)</td></tr>
+        </tbody>
+      </table>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Fem av topp-20-featurene er nye, inkludert den eneste med høyest gain blant
+        alle 474. <code>r1_lab_b_std</code> er interessant: den fanger hvor mye
+        brukerens 16 runde-1-valg varierer langs den blå-gule aksen. Liten std betyr
+        at brukeren holdt seg på én side av b*-spekteret – det vil si konsekvent
+        "blåaktig" eller konsekvent "rosa/gulaktig" – som er nøyaktig det perseptuelle
+        signalet kjønnsoppgaven prøver å trekke ut.
+      </p>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Mindre interessant: enkelt-farge-LAB-featurene for siste valg
+        (<code>final_lab_L</code>, <code>final_lab_a</code>, <code>final_lab_b</code>)
+        lander alle utenfor topp-350. Redundansen med eksisterende
+        <code>final_h</code>, <code>final_s</code>, <code>final_l</code>-features
+        er for høy til å tilføre mye. Aggregatene og prototype-avstandene er der
+        gainene faktisk ligger.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Konfigurasjon</h2>
+      <ul class="config-list">
+        <li><strong>Feature-vektor</strong>441 base-features (<a href="../info/features.html">full liste</a>) + 33 perseptuelle ekstra</li>
+        <li><strong>Modell</strong>Enkel LightGBM, identisk konfig som enkelt-LGB-basislinje-raden</li>
+        <li><strong>Hyperparametere</strong>n_estimators=800/1000, num_leaves=63, learning_rate=0.03, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5, min_child_samples=20, reg_lambda=1.0</li>
+        <li><strong>Formål</strong>binary (kjønn) · regression / L2 (alder, humør)</li>
+        <li><strong>CV</strong>5-fold StratifiedKFold for kjønn, KFold for alder og humør, seed 42</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Prosjektlenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/extra-features" target="_blank" rel="noopener">Kildekode på GitHub</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/extra-features/train.py" target="_blank" rel="noopener">train.py</a>
+        <a href="../info/features.html">441-feature basis-pipeline</a>
+      </div>
+    </section>
+
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

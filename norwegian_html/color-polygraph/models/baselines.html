@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Single-model baselines · Color Polygraph · Andreas Lindeman</title>
-  <meta name="description" content="The five single-model baselines on the color polygraph leaderboard: LightGBM, XGBoost, HistGradientBoosting, MLP, Linear." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/models/baselines.html" />
+  <title>Enkel-modell basislinjer · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="De fem enkel-modell basislinjenene på color polygraph-leaderboardet: LightGBM, XGBoost, HistGradientBoosting, MLP, lineær." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/baselines.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -27,35 +27,35 @@
 </head>
 <body>
 
-  <nav class="site-nav" aria-label="Primary">
-    <a href="https://andreaslindeman.com/" class="brand">
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
       <span class="brand-mark">AL</span>
       <span class="brand-name">Andreas Lindeman</span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
     </button>
     <ul id="nav-links-list" class="nav-links">
-      <li><a href="https://andreaslindeman.com/#about">About</a></li>
-      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
-      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
-      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
     </ul>
-    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.no" href="https://ai.andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
       <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
-      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
     </a>
   </nav>
   <script>
     (function(){
       var s=document.querySelector('.lang-switch');
       if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
-      var nav=document.querySelector('.site-nav'), btn=document.querySelector('.nav-toggle');
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
       if(btn&&nav){
-        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open menu');}
-        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Close menu':'Open menu');});
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
         nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
         document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
         document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
@@ -64,35 +64,35 @@
   </script>
 
   <main class="project-page">
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
       <span class="sep"></span>
-      <span>Color polygraph · architecture detail</span>
+      <span>Color polygraph · arkitekturdetalj</span>
       <span class="sep"></span>
-      <span class="status-tag ongoing">Sanity check</span>
+      <span class="status-tag ongoing">Fornuftsjekk</span>
     </div>
 
-    <h1 class="project-title">Single-model <em>baselines</em></h1>
+    <h1 class="project-title">Enkel-modell <em>basislinjer</em></h1>
 
     <p class="project-lede">
-      Five hand-tuned single configurations under the shared 5-fold CV. No random
-      search, no stacking, no per-target tweaking - one default config per family
-      that a reasonable practitioner would write on day one. The job of this page
-      is to keep the rest of the leaderboard honest: anything that does not beat
-      these by a clear margin is not earning its keep.
+      Fem håndtunte enkelt-konfigurasjoner under felles 5-fold CV. Ingen søk,
+      ingen stacking, ingen per-mål-justering – én standardkonfigurasjon per familie
+      som en fornuftig praktiker ville skrevet på dag én. Denne sidens jobb er å holde
+      resten av leaderboardet ærlig: alt som ikke slår disse med en klar margin er
+      ikke verdt innsatsen.
     </p>
 
     <section class="project-section">
-      <h2>Per-model scores</h2>
+      <h2>Resultater per modell</h2>
       <table class="baseline-table">
         <thead>
           <tr>
-            <th>Model</th>
-            <th>Gender AUC</th>
-            <th>Age MAE</th>
-            <th>Mood MAE</th>
+            <th>Modell</th>
+            <th>Kjønn AUC</th>
+            <th>Alder MAE</th>
+            <th>Humør MAE</th>
           </tr>
         </thead>
         <tbody>
@@ -121,7 +121,7 @@
             <td class="sc">10.84</td>
           </tr>
           <tr>
-            <td class="bn">Linear (logistic / ridge)</td>
+            <td class="bn">Lineær (logistisk / ridge)</td>
             <td class="sc">0.810</td>
             <td class="sc">8.77</td>
             <td class="sc">11.35</td>
@@ -129,40 +129,40 @@
         </tbody>
       </table>
       <p class="lb-note" style="font-family: var(--mono); font-size: 11px; color: var(--text-mute);">
-        Best baseline per column highlighted. A simple LightGBM with sensible defaults
-        wins every metric here. The blended baseline row on the leaderboard (logistic
-        + HGB + LGB + XGB + MLP) lands at 0.874 / 7.10 / 9.10 because the linear and
-        MLP members drag the trees down.
+        Beste basislinje per kolonne er fremhevet. En enkel LightGBM med fornuftige
+        standardverdier vinner alle måltall. Den blandede baselineraden på leaderboardet
+        (logistisk + HGB + LGB + XGB + MLP) lander på 0.874 / 7.10 / 9.10 fordi de
+        lineære og MLP-medlemmene drar trærne ned.
       </p>
     </section>
 
     <section class="project-section">
-      <h2>Configurations</h2>
+      <h2>Konfigurasjoner</h2>
       <ul class="config-list">
-        <li><strong>Logistic / ridge</strong>StandardScaler + sklearn LogisticRegression (gender) or Ridge (regression), default alpha</li>
+        <li><strong>Logistisk / ridge</strong>StandardScaler + sklearn LogisticRegression (kjønn) eller Ridge (regresjon), standard alpha</li>
         <li><strong>HistGradientBoosting</strong>max_iter=600, max_depth=7, learning_rate=0.05, l2_regularization=0.5</li>
         <li><strong>LightGBM</strong>n_estimators=1000, num_leaves=63, learning_rate=0.03, feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=5</li>
         <li><strong>XGBoost</strong>n_estimators=1000, max_depth=6, learning_rate=0.03, subsample=0.85, colsample_bytree=0.85</li>
-        <li><strong>MLP</strong>StandardScaler + hidden=(256,128,64), max_iter=400, alpha=1e-3, early stopping on 10% val</li>
-        <li><strong>Feature vector</strong>Same 441 engineered features as the tree-based architectures (<a href="../info/features.html">full breakdown</a>)</li>
-        <li><strong>CV</strong>5-fold StratifiedKFold (gender), KFold (age, mood), seed 42</li>
+        <li><strong>MLP</strong>StandardScaler + hidden=(256,128,64), max_iter=400, alpha=1e-3, tidlig stopp på 10% val</li>
+        <li><strong>Featurevektor</strong>Samme 441 ingeniørlagde features som trebaserte arkitekturer (<a href="../info/features.html">full oversikt</a>)</li>
+        <li><strong>CV</strong>5-fold StratifiedKFold (kjønn), KFold (alder, humør), seed 42</li>
       </ul>
     </section>
 
     <section class="project-section">
-      <h2>Project links</h2>
+      <h2>Prosjektlenker</h2>
       <div class="project-links">
-        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/baselines" target="_blank" rel="noopener">Source on GitHub</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/baselines" target="_blank" rel="noopener">Kildekode på GitHub</a>
         <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/baselines/train.py" target="_blank" rel="noopener">train.py</a>
       </div>
     </section>
 
-    <a href="../index.html" class="project-back">Back to AI architectures leaderboard</a>
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
   </main>
 
   <footer class="site-footer">
     <span>© <span id="year"></span> Andreas Lindeman</span>
-    <span class="footer-meta">Built by hand · No frameworks · Hosted on GitHub Pages</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
   </footer>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>

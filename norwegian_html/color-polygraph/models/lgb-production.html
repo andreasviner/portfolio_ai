@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LightGBM (produksjon) · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Den utrullede produksjonsmodellen: full LightGBM + bucket-skårer (leaderboard-mesterkonfigurasjonen). Kjønn AUC 0.886, alder MAE 6.48, humør MAE 8.76." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/models/lgb-production.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    .model-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .model-scores .card { border: 1px solid var(--hairline); border-radius: 6px; padding: 14px 16px; background: var(--surface); }
+    .model-scores .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-mute); }
+    .model-scores .value { font-family: var(--serif); font-style: italic; font-variation-settings: "opsz" 36; font-size: 28px; margin-top: 6px; color: var(--text); }
+    .model-scores .meta { font-family: var(--mono); font-size: 11px; color: var(--text-mute); margin-top: 4px; }
+    .config-list { list-style: none; padding: 0; margin: 0; }
+    .config-list li { font-family: var(--mono); font-size: 12px; color: var(--text); padding: 8px 0; border-bottom: 1px dashed var(--hairline); }
+    .config-list li:last-child { border-bottom: none; }
+    .config-list strong { color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; display: inline-block; min-width: 160px; margin-right: 8px; }
+    @media (max-width: 720px) { .model-scores { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>Color polygraph · arkitekturdetalj</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">Produksjonsklar</span>
+    </div>
+
+    <h1 class="project-title">LightGBM <em>(produksjon)</em></h1>
+
+    <p class="project-lede">
+      Modellen det live-surveyet faktisk bruker: leaderboardets
+      <a href="lgb-buckets.html">LightGBM + bucket-skårer</a> i full konfigurasjon
+      (800 trær for kjønn, 1 000 for alder og humør; num_leaves=63; lr=0.03).
+      Trening er en to-pasningsprosedyre – først et ærlig evalueringspass på et
+      stratifisert 6 000 / 710 tilfeldig splitt, deretter et utrullingspass som
+      refitter de tre boosterne på alle 6 710 gyldige sesjoner før de emittes.
+      Cloudflare-workeren håndterer bare feature-ekstraksjon og databasepersistering;
+      LightGBM-trærne selv sendes som JSON og nettleseren går gjennom dem med en
+      30-linjers tree walker.
+    </p>
+
+    <section class="project-section">
+      <h2>Resultater</h2>
+      <div class="model-scores">
+        <div class="card">
+          <div class="label">Kjønn AUC</div>
+          <div class="value">0.886</div>
+          <div class="meta">stratifisert 710-rads tilfeldig hold-out</div>
+        </div>
+        <div class="card">
+          <div class="label">Alder MAE</div>
+          <div class="value">6.48</div>
+          <div class="meta">R² +0.28 på hold-out</div>
+        </div>
+        <div class="card">
+          <div class="label">Humør MAE</div>
+          <div class="value">8.76</div>
+          <div class="meta">R² +0.24 på hold-out</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="project-section">
+      <h2>To-pasningstrening</h2>
+      <p>
+        Pass én er <strong>evalueringspasset</strong>. De 6 710 gyldige sesjonene
+        splittes med sklearn's <code>train_test_split</code>, stratifisert på kjønn
+        med seed 42, i 6 000 trenre- / 710 valideringsrader. Per-pool bucket-gitter
+        bygges kun fra de 6 000 treningsradene, slik at det ikke er lekkasje på
+        valideringsfolden. Alle tre hoder fittes og skåres på 710-rads hold-out;
+        disse tallene er det som fyller leaderboard-raden.
+      </p>
+      <p>
+        Pass to er <strong>utrullingspasset</strong>. Bucket-gitterne bygges om fra
+        alle rader, og de tre hodene refitters på alle 6 710 sesjoner. Bare disse
+        endelige boosterne emitteres til <code>models-js/</code> som JSON. Den
+        utrullede modellen ser 710 flere rader enn evalueringsmodellen, så dens
+        sanne generalisering bør ikke være dårligere enn det pass én rapporterer –
+        leaderboard-tallet er en nedre grense for det som faktisk er i drift.
+      </p>
+      <p>
+        En tidligere versjon av dette skriptet brukte et <em>temporalt</em> hold-out
+        (de siste 710 sesjonene i innsendingsrekkefølge) i stedet for et tilfeldig
+        stratifisert splitt. Det kuttet kjønn-AUC opp til 0.900 på hold-out, men
+        sprengte også alder- og humør-MAE opp til 7.3 og 10.4 fordi den nyeste
+        kohorten drifter på disse målene – alder R² på det hold-out-settet ble
+        <em>negativt</em>. Det tilfeldige splittet som brukes her gir en representativ
+        valideringsfordeling og lar alle tre metrikkene evalueres på samme protokoll.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Konfigurasjon</h2>
+      <ul class="config-list">
+        <li><strong>Feature-vektor</strong>477 floats for kjønn (441 base + 33 perseptuelle ekstra + 3 bucket-totaler), 475 for alder og humør (det samme med én bucket-kodet kovarians-skår i stedet for tre)</li>
+        <li><strong>Bucket-gitter</strong>8×8×8 RGB-gitter; feminin/maskulin kovarians for kjønn, mål-sentrert kovarians for alder og humør. Evaluerings-passgitter fra 6 000 treningsrader; utrullede gitter fra alle 6 710</li>
+        <li><strong>Trær (kjønn)</strong>800, ubegrenset dybde, maks 63 blader, lr=0.03, L2 lambda 1.0</li>
+        <li><strong>Trær (alder, humør)</strong>1 000, samme konfig, standard LightGBM L2 regresjonsformål</li>
+        <li><strong>Evalueringssplitt</strong>stratifisert tilfeldig 6 000 / 710 på kjønn, seed 42</li>
+        <li><strong>Konvertering</strong>egendefinert flat-tre-emitter traverserer <code>booster.dump_model()</code> iterativt og emitterer kompakt JSON (~3 MB per booster). En 30-linjers JavaScript tree walker leser JSON og kjører inferens klientsiden; bit-eksakt samsvar med LightGBM raw scores (maks <code>|delta|</code> = 0 på verifiseringsbatchen)</li>
+        <li><strong>Utrulling</strong>tre JSON-tre-filer på <code>/ai/color-polygraph/models-js/{gender,age,mood}_trees.json</code> (kjønn 2.8 MB, alder 3.5 MB, humør 3.5 MB). Lastes late av survey-siden og caches for sesjonen</li>
+        <li><strong>Varm inferens</strong>~3–6 ms per mål i V8 på en ny laptop, trygt under 10 ms-budsjettet</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Prosjektlenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/color-analyzer-ai/tree/main/training/lgb-production" target="_blank" rel="noopener">Kildekode på GitHub</a>
+        <a href="lgb-buckets.html">Full LightGBM + bucket-skårer</a>
+        <a href="../survey.html">Live survey</a>
+      </div>
+    </section>
+
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

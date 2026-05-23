@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your results · Color Polygraph · Andreas Lindeman</title>
-  <meta name="description" content="Color Polygraph results: see what the AI guessed about your gender, age, and mood from 21 colour picks." />
+  <title>Dine resultater · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Color Polygraph-resultater: se hva KI-en gjettet om kjønn, alder og humør fra 21 fargevelg." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -410,25 +410,25 @@
 </head>
 <body>
 
-  <nav class="site-nav" aria-label="Primary">
-    <a href="https://andreaslindeman.com/" class="brand">
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
       <span class="brand-mark">AL</span>
       <span class="brand-name">Andreas Lindeman</span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
     </button>
     <ul id="nav-links-list" class="nav-links">
-      <li><a href="https://andreaslindeman.com/#about">About</a></li>
-      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
-      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
-      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
     </ul>
-    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.no" href="https://ai.andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
       <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
-      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
     </a>
   </nav>
   <script>
@@ -437,8 +437,8 @@
       if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
       var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
       if(btn&&nav){
-        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open menu');}
-        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Close menu':'Open menu');});
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
         nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
         document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
         document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
@@ -448,7 +448,7 @@
 
   <div class="rv-wrap" id="rvWrap"></div>
 
-  <script src="./models-js/tree_walker.js"></script>
+  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/tree_walker.js"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -461,7 +461,7 @@
         ? window.COLOR_POLYGRAPH_API.replace(/\/$/, '')
         : DEFAULT_API_URL;
     })();
-    const MODELS_BASE = './models-js/';
+    const MODELS_BASE = 'https://ai.andreaslindeman.com/color-polygraph/models-js/';
     const MODEL_CACHE = Object.create(null);
 
     function loadModel(name) {
@@ -517,7 +517,7 @@
     }
 
     function makeDots(activeKey) {
-      const steps = ['gender', 'age', 'mood', 'stats'];
+      const steps = ['kjønn', 'alder', 'humør', 'statistikk'];
       const ai = steps.indexOf(activeKey);
       return '<div class="rv-dots">' +
         steps.map((s, i) => '<span class="rv-dot' + (i < ai ? ' is-done' : i === ai ? ' is-active' : '') + '"></span>').join('') +
@@ -526,10 +526,10 @@
     }
 
     function moodLabel(v) {
-      if (v >= 45) return 'happy';
-      if (v >= 30) return 'okay';
-      if (v >= 15) return 'down';
-      return 'glum';
+      if (v >= 45) return 'glad';
+      if (v >= 30) return 'ok';
+      if (v >= 15) return 'litt nede';
+      return 'trist';
     }
 
     function rgbToHsl([r, g, b]) {
@@ -553,15 +553,15 @@
       history.forEach(round => round.forEach(p => allPicks.push(p.winner)));
       const sorted = allPicks.slice().sort((a, b) => rgbToHsl(a.rgb)[0] - rgbToHsl(b.rgb)[0]);
       const chips = sorted.map(c => '<div style="flex:1;min-width:2px;background:' + c.hex + '"></div>').join('');
-      return '<div class="rv-hue-strip">' + chips + '</div><p class="rv-hue-strip-label">All your picks sorted by hue</p>';
+      return '<div class="rv-hue-strip">' + chips + '</div><p class="rv-hue-strip-label">Alle valgene dine sortert etter fargetone</p>';
     }
 
     function paletteTone(history) {
       const picks = [];
       history.forEach(round => round.forEach(p => picks.push(p.winner.rgb)));
-      if (!picks.length) return 'mixed';
+      if (!picks.length) return 'blandet';
       const avg = picks.reduce((s, rgb) => s + rgbToHsl(rgb)[0], 0) / picks.length;
-      return avg < 50 || avg > 310 ? 'warm' : avg > 140 && avg < 270 ? 'cool' : 'mixed';
+      return avg < 50 || avg > 310 ? 'varm' : avg > 140 && avg < 270 ? 'kald' : 'blandet';
     }
 
     function buildPayload(savedState) {
@@ -612,33 +612,33 @@
       const shareUrl = window.location.origin + window.location.pathname + window.location.search;
 
       const pillsHtml = [
-        confirmedGender ? '<span class="rv-pill">Gender <b>' + confirmedGender + '</b></span>' : '',
-        confirmedAge != null ? '<span class="rv-pill">Age <b>' + confirmedAge + '</b></span>' : '',
-        confirmedMood != null ? '<span class="rv-pill">Mood <b>' + moodLabel(confirmedMood) + '</b></span>' : '',
-        tone !== '—' ? '<span class="rv-pill">Palette <b>' + tone + '</b></span>' : '',
-        timeStr !== '—' ? '<span class="rv-pill">Time <b>' + timeStr + '</b></span>' : '',
+        confirmedGender ? '<span class="rv-pill">Kjønn <b>' + confirmedGender + '</b></span>' : '',
+        confirmedAge != null ? '<span class="rv-pill">Alder <b>' + confirmedAge + '</b></span>' : '',
+        confirmedMood != null ? '<span class="rv-pill">Humør <b>' + moodLabel(confirmedMood) + '</b></span>' : '',
+        tone !== '—' ? '<span class="rv-pill">Palett <b>' + tone + '</b></span>' : '',
+        timeStr !== '—' ? '<span class="rv-pill">Tid <b>' + timeStr + '</b></span>' : '',
       ].join('');
 
       goSlide(s => {
         s.innerHTML =
-          makeDots('stats') +
+          makeDots('statistikk') +
           '<div class="rv-stats-layout">' +
             '<div class="rv-winner-swatch" style="background:' + w.hex + '"></div>' +
             '<div>' +
-              '<p class="rv-eyebrow">Your favourite color</p>' +
+              '<p class="rv-eyebrow">Din favorittfarge</p>' +
               '<p class="rv-winner-hex">' + w.hex.toUpperCase() + '</p>' +
               '<p class="rv-winner-rgb">rgb(' + w.rgb[0] + ', ' + w.rgb[1] + ', ' + w.rgb[2] + ')</p>' +
               '<div class="rv-pills">' + pillsHtml + '</div>' +
               (history ? buildHueStrip(history) : '') +
             '</div>' +
           '</div>' +
-          (score != null ? '<p class="rv-score">The model got <b>' + score + ' of 3</b> correct.</p>' : '') +
+          (score != null ? '<p class="rv-score">Modellen fikk <b>' + score + ' av 3</b> riktig.</p>' : '') +
           '<div class="rv-actions">' +
-            '<button type="button" class="rv-retake" id="rvRetake">Retake survey</button>' +
-            '<button type="button" class="rv-share" id="rvShare">Share results</button>' +
-            '<span class="rv-share-toast" id="rvToast" style="display:none">Link copied</span>' +
+            '<button type="button" class="rv-retake" id="rvRetake">Ta surveyet på nytt</button>' +
+            '<button type="button" class="rv-share" id="rvShare">Del resultater</button>' +
+            '<span class="rv-share-toast" id="rvToast" style="display:none">Lenke kopiert</span>' +
           '</div>' +
-          '<a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">More about the project</a>';
+          '<a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">Mer om prosjektet</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
           window.location.href = 'survey.html';
@@ -646,7 +646,7 @@
         s.querySelector('#rvShare').addEventListener('click', () => {
           const shareData = {
             title: 'Color Polygraph',
-            text: 'My favourite color is ' + w.hex.toUpperCase() + '. The AI guessed ' + (score != null ? score + '/3 of' : 'my') + ' gender, age & mood from 21 colour picks.',
+            text: 'Min favorittfarge er ' + w.hex.toUpperCase() + '. KI-en gjettet ' + (score != null ? score + '/3 av' : 'mitt') + ' kjønn, alder og humør fra 21 fargevelg.',
             url: shareUrl,
           };
           const toast = s.querySelector('#rvToast');
@@ -659,9 +659,9 @@
             navigator.clipboard.writeText(text).then(() => {
               toast.style.display = '';
               setTimeout(() => { toast.style.display = 'none'; }, 2400);
-            }).catch(() => window.prompt('Copy link:', text));
+            }).catch(() => window.prompt('Kopier lenke:', text));
           } else {
-            window.prompt('Copy link:', text);
+            window.prompt('Kopier lenke:', text);
           }
         });
       });
@@ -670,7 +670,7 @@
     // ---- ID-based flow (shared link) ----
     async function runIdFlow(id) {
       goSlide(s => {
-        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading results…</p></div>';
+        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster resultater…</p></div>';
       });
 
       let data;
@@ -678,7 +678,7 @@
         data = await getJson('/survey/' + encodeURIComponent(id));
       } catch (err) {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not load results for this ID.<br><a href="survey.html">Take the survey</a></p></div>';
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Kunne ikke laste resultater for denne ID-en.<br><a href="survey.html">Ta surveyet</a></p></div>';
         });
         return;
       }
@@ -706,7 +706,7 @@
 
       // LOADING
       goSlide(s => {
-        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Sending picks to model…</p></div>';
+        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Sender valg til modellen…</p></div>';
       });
 
       let surveyId = null, features = null;
@@ -719,7 +719,7 @@
         features = resp.features;
       } catch (err) {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not reach the inference server.<br>Try again in a moment.</p></div>';
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Kunne ikke nå inferensserveren.<br>Prøv igjen om litt.</p></div>';
         });
         return;
       }
@@ -734,26 +734,26 @@
       let predGenderLabel = null, confirmedGender = null;
       try {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading gender model…</p></div>';
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster kjønnsmodellen…</p></div>';
         });
         const model = await loadModel('gender');
         const raw = TreeWalker.score(model, features.gender);
         const prob = TreeWalker.sigmoid(raw);
-        predGenderLabel = prob >= 0.5 ? 'girl' : 'boy';
-        const other = predGenderLabel === 'girl' ? 'boy' : 'girl';
+        predGenderLabel = prob >= 0.5 ? 'jente' : 'gutt';
+        const other = predGenderLabel === 'jente' ? 'gutt' : 'jente';
         const pct = Math.round(Math.max(prob, 1 - prob) * 100);
 
         confirmedGender = await new Promise(resolve => {
           goSlide(s => {
             s.innerHTML =
-              makeDots('gender') +
-              '<p class="rv-eyebrow">We think you are a</p>' +
+              makeDots('kjønn') +
+              '<p class="rv-eyebrow">Vi tror du er en</p>' +
               '<p class="rv-big">' + predGenderLabel + '</p>' +
-              '<p class="rv-conf">' + pct + '% confident</p>' +
-              ‘<div class="rv-btns">’ +
-                ‘<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>’ +
-                ‘<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ‘ + other + ‘</button>’ +
-              ‘</div>’;
+              '<p class="rv-conf">' + pct + '% sikker</p>' +
+              '<div class="rv-btns">' +
+                '<button type="button" class="rv-btn is-yes" id="rvGY">Stemmer!</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGN">Jeg er faktisk en ' + other + '</button>' +
+              '</div>';
             s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
             s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
           });
@@ -771,7 +771,7 @@
       let predAge = null, confirmedAge = null;
       try {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading age model…</p></div>';
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster aldersmodellen…</p></div>';
         });
         const model = await loadModel('age');
         predAge = Math.max(6, Math.min(80, TreeWalker.score(model, features.age)));
@@ -780,16 +780,16 @@
         confirmedAge = await new Promise(resolve => {
           goSlide(s => {
             s.innerHTML =
-              makeDots('age') +
-              '<p class="rv-eyebrow">We think you are about</p>' +
+              makeDots('alder') +
+              '<p class="rv-eyebrow">Vi tror du er omtrent</p>' +
               '<p class="rv-big">' + rounded + '</p>' +
-              '<p class="rv-conf">years old — enter your actual age below</p>' +
+              '<p class="rv-conf">år gammel — skriv inn din faktiske alder nedenfor</p>' +
               '<div class="rv-age-wrap">' +
                 '<input type="number" id="rvAgeInp" min="6" max="99" value="' + rounded + '">' +
-                '<span class="rv-hint">enter the same number if correct</span>' +
+                '<span class="rv-hint">skriv inn det samme hvis det stemmer</span>' +
               '</div>' +
               '<div class="rv-btns">' +
-                '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Confirm age</button>' +
+                '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Bekreft alder</button>' +
               '</div>';
             const inp = s.querySelector('#rvAgeInp');
             inp.focus();
@@ -811,7 +811,7 @@
       let predMood = null, confirmedMood = null;
       try {
         goSlide(s => {
-          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading mood model…</p></div>';
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster humørmodellen…</p></div>';
         });
         const model = await loadModel('mood');
         predMood = Math.max(0, Math.min(60, TreeWalker.score(model, features.mood)));
@@ -820,15 +820,15 @@
         confirmedMood = await new Promise(resolve => {
           goSlide(s => {
             s.innerHTML =
-              makeDots('mood') +
-              '<p class="rv-eyebrow">How are you feeling right now?</p>' +
+              makeDots('humør') +
+              '<p class="rv-eyebrow">Hvordan har du det akkurat nå?</p>' +
               '<p class="rv-big" id="rvMoodWord">' + moodLabel(rounded) + '</p>' +
               '<div class="rv-slider-wrap">' +
                 '<input type="range" id="rvMoodSlider" min="0" max="60" step="1" value="' + rounded + '">' +
-                '<div class="rv-slider-labels"><span>Glum</span><span>Down</span><span>Okay</span><span>Happy</span></div>' +
+                '<div class="rv-slider-labels"><span>Trist</span><span>Litt nede</span><span>Ok</span><span>Glad</span></div>' +
               '</div>' +
               '<div class="rv-btns">' +
-                '<button type="button" class="rv-btn is-yes" id="rvMoodSave">Confirm mood</button>' +
+                '<button type="button" class="rv-btn is-yes" id="rvMoodSave">Bekreft humør</button>' +
               '</div>';
             const slider = s.querySelector('#rvMoodSlider');
             const wordEl = s.querySelector('#rvMoodWord');
@@ -878,11 +878,10 @@
       } catch (_e) {}
 
       if (!savedState || !savedState.winner) {
-        // No state and no ID — redirect to survey
         const s = document.createElement('div');
         s.className = 'rv-slide';
         wrap.appendChild(s);
-        s.innerHTML = '<div class="rv-center"><p class="rv-error">No survey data found.<br><a href="survey.html">Take the survey</a></p></div>';
+        s.innerHTML = '<div class="rv-center"><p class="rv-error">Ingen surveydata funnet.<br><a href="survey.html">Ta surveyet</a></p></div>';
         requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-current')));
         return;
       }

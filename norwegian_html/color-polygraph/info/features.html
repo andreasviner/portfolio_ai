@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature engineering · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Alle 441 features de trebaserte modellene bruker på color polygraph-datasettet, gruppert og forklart." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/info/features.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    .feat-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+    .feat-summary .card {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 14px 16px;
+      background: var(--surface);
+    }
+    .feat-summary .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+    }
+    .feat-summary .value {
+      font-family: var(--serif);
+      font-style: italic;
+      font-variation-settings: "opsz" 36;
+      font-size: 28px;
+      margin-top: 6px;
+      color: var(--text);
+    }
+    .feat-summary .meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      margin-top: 4px;
+    }
+    .feat-block {
+      margin: 24px 0 0;
+      padding: 18px 20px;
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .feat-block h3 {
+      margin: 0 0 6px;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 20px;
+      font-variation-settings: "opsz" 36;
+    }
+    .feat-block .count {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--hobby);
+      margin-bottom: 8px;
+    }
+    .feat-block p {
+      margin: 8px 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .feat-block code,
+    .feat-names code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+    .feat-names {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      margin-top: 10px;
+      line-height: 1.7;
+    }
+    .feat-names strong {
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .feat-toc {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px 18px;
+    }
+    .feat-toc li {
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .feat-toc li a {
+      color: var(--text-mute);
+      border-bottom: 1px dotted var(--hairline);
+      transition: color .2s, border-color .2s;
+    }
+    .feat-toc li a:hover {
+      color: var(--text);
+      border-color: var(--text-mute);
+    }
+    .feat-toc li span {
+      color: var(--text-dim);
+      font-size: 10px;
+      margin-left: 6px;
+    }
+    @media (max-width: 720px) {
+      .feat-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <main class="project-page">
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+
+    <div class="project-meta-row">
+      <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
+      <span class="sep"></span>
+      <span>Color polygraph · feature engineering</span>
+      <span class="sep"></span>
+      <span class="status-tag ongoing">441 features per sesjon</span>
+    </div>
+
+    <h1 class="project-title">Feature <em>engineering</em></h1>
+
+    <p class="project-lede">
+      De trebaserte arkitekturene på leaderboardet konsumerer alle den samme 441-dims
+      vektoren bygget av <code>features.py</code>. Sekvensmodellene gjør det ikke –
+      de reparserer den rå sesjonen og bygger sine egne per-stegs-embeddings – men
+      rensereglene nedenfor avgjør hvilke sesjoner som inngår i <em>noen</em> av
+      rørledningene.
+    </p>
+
+    <section class="project-section">
+      <h2>Oversikt</h2>
+      <div class="feat-summary">
+        <div class="card">
+          <div class="label">Features per sesjon</div>
+          <div class="value">441</div>
+          <div class="meta">alle numeriske, alle float32</div>
+        </div>
+        <div class="card">
+          <div class="label">Rene sesjoner</div>
+          <div class="value">6 710</div>
+          <div class="meta">av ~6 800 råd rader</div>
+        </div>
+        <div class="card">
+          <div class="label">Feature-blokker</div>
+          <div class="value">15</div>
+          <div class="meta">gruppert etter hva de beskriver</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="project-section">
+      <h2>Slik ser råinndataene ut</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Hver rad i <code>save.ligma</code> beskriver én sesjon. En sesjon er et
+        21-stegs eliminasjonsturnerning:
+      </p>
+      <ul style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        <li><strong>Runde 1</strong> &mdash; 16 spørsmål. Hvert viser 4 farger, brukeren velger 1. Det gir 16 runde-1-vinnere.</li>
+        <li><strong>Runde 2</strong> &mdash; 4 spørsmål. Hvert viser 4 av runde-1-vinnerne, brukeren velger 1. Det gir 4 runde-2-vinnere.</li>
+        <li><strong>Finale</strong> &mdash; 1 spørsmål. 4 runde-2-vinnere, brukeren velger den endelige fargen.</li>
+      </ul>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Lagrede felt per rad: en id, et UNIX-tidsstempel, en sensurert IP, alder (år),
+        humør (0&ndash;60), kjønn, den 21-tegnede valgstrengen, de 21 kumulative
+        millisekund-tidsstemplene og farge-arrayene
+        <code>[64 tilbudte, 16 r1-vinnere, 4 r2-vinnere, finale]</code>.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Valideringsregler</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        En rad inngår i datasettet bare hvis den består alle disse sjekkene (se
+        <code>is_valid()</code> i <code>features.py</code>). De samme reglene er
+        duplisert i hvert sekvensmodell-skript slik at treningssettene er identiske:
+      </p>
+      <ul style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        <li>Kjønnsetikett er én av <code>"g"</code> (gutt) eller <code>"j"</code> (jente)</li>
+        <li>Alder er et heltall i <code>[6, 68]</code></li>
+        <li>Farge-arrayene har minst 64 / 16 / 4 oppføringer for de tre rundene</li>
+        <li>Nøyaktig 21 tidsoppføringer</li>
+        <li>Total sesjonsvarighet i <code>[15s, 600s]</code> &mdash; kaster ut avbrutte sesjoner og afk-brukere</li>
+        <li>Humøretikett parser som et fortegnet heltall</li>
+      </ul>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Omtrent 1.2% av råradene feiler disse sjekkene. Resten blir det 6 710-rads
+        datasettet alle modellene på leaderboardet trenes på.
+      </p>
+    </section>
+
+    <section class="project-section">
+      <h2>Feature-blokker</h2>
+      <p style="font-family: var(--mono); font-size: 12px; color: var(--text-mute);">
+        Hopp til en blokk:
+      </p>
+      <ul class="feat-toc">
+        <li><a href="#b-color-stats">Per-stadium fargesammendragsstatistikk</a><span>36</span></li>
+        <li><a href="#b-final">Endelig farge</a><span>11</span></li>
+        <li><a href="#b-selectivity">Selektivitetsdeltas</a><span>6</span></li>
+        <li><a href="#b-voxel-div">Voxel-diversitet</a><span>2</span></li>
+        <li><a href="#b-spread">Runde-1 intern spredning</a><span>1</span></li>
+        <li><a href="#b-r1q">Per runde-1-spørsmål</a><span>208</span></li>
+        <li><a href="#b-decisive">Besluttsomhetsaggregat</a><span>2</span></li>
+        <li><a href="#b-r2q">Per runde-2-spørsmål</a><span>36</span></li>
+        <li><a href="#b-pos">Posisjonsvalg-aggregat</a><span>5</span></li>
+        <li><a href="#b-hist">Runde-1 voxel-histogram</a><span>64</span></li>
+        <li><a href="#b-ref">Referansefargeav­stander</a><span>13</span></li>
+        <li><a href="#b-final-dist">Finale-til-runde-gjennomsnitt</a><span>2</span></li>
+        <li><a href="#b-trajectory">Runde-1-bane</a><span>6</span></li>
+        <li><a href="#b-extreme">Ekstremvalg-tellinger</a><span>6</span></li>
+        <li><a href="#b-time-bucket">Runde-1 tids-buckets</a><span>5</span></li>
+        <li><a href="#b-time-x">Tid × atferd</a><span>2</span></li>
+        <li><a href="#b-timing">Tidssammendrag</a><span>12</span></li>
+        <li><a href="#b-tq">Per-spørsmål råtider</a><span>21</span></li>
+        <li><a href="#b-hour">Time på dagen</a><span>3</span></li>
+      </ul>
+
+      <article class="feat-block" id="b-color-stats">
+        <span class="count">36 features</span>
+        <h3>Per-stadium fargesammendragsstatistikk</h3>
+        <p>
+          Gjennomsnitt og standardavvik av R, G, B, H, S, L (12 tall) over hvert av
+          de tre farge-stadiene: de 64 tilbudte fargene, de 16 runde-1-vinnerne
+          og de 4 runde-2-vinnerne. Fanger ting som "denne brukeren graviterer
+          mot mørke mettede farger" uten å forplikte seg til hvilke dimensjoner
+          som faktisk betyr noe.
+        </p>
+        <p class="feat-names">
+          <strong>off_*</strong>, <strong>r1_*</strong>, <strong>r2_*</strong> med suffikser <code>r_mean</code> <code>g_mean</code> <code>b_mean</code> <code>r_std</code> <code>g_std</code> <code>b_std</code> <code>h_mean</code> <code>s_mean</code> <code>l_mean</code> <code>h_std</code> <code>s_std</code> <code>l_std</code>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-final">
+        <span class="count">11 features</span>
+        <h3>Endelig farge</h3>
+        <p>
+          Fargen brukeren til slutt valgte, kodet redundant slik at trærne kan
+          splitte på hvilken som helst fargerom som tilfeldigvis er informativt.
+        </p>
+        <p class="feat-names">
+          <strong>final_r, final_g, final_b</strong> (RGB, 0&ndash;1) ·
+          <strong>final_h, final_s, final_l</strong> (HSL) ·
+          <strong>final_y, final_u, final_v</strong> (YUV) ·
+          <strong>final_warmth</strong> = (R&minus;B) / 255 ·
+          <strong>final_chroma</strong> = (maks&minus;min) / 255.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-selectivity">
+        <span class="count">6 features</span>
+        <h3>Selektivitetsdeltas</h3>
+        <p>
+          Hvor mye runde-1-gjennomsnittfargen avviker fra tilbudt-sett-gjennomsnittet,
+          per kanal, og hvor mye runde-2-gjennomsnittet avviker fra runde-1-gjennomsnittet.
+          Et stort positivt <code>sel_r1_dr</code> betyr "denne brukeren skjøv
+          utvalget mot rødere farger når de fikk sjansen".
+        </p>
+        <p class="feat-names">
+          <strong>sel_r1_dr, sel_r1_dg, sel_r1_db</strong>,
+          <strong>sel_r2_dr, sel_r2_dg, sel_r2_db</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-voxel-div">
+        <span class="count">2 features</span>
+        <h3>Voxel-diversitet</h3>
+        <p>
+          Hvor mange distinkte 8×8×8 RGB-voxler runde-1- og runde-2-vinnerne
+          sprer seg over, normalisert med henholdsvis 16 og 4. Nær 1.0 betyr at
+          brukeren plukket over hele fargerommet; nær 0.0 betyr at de holdt seg
+          i ett nabolag.
+        </p>
+        <p class="feat-names">
+          <strong>voxel_div_r1</strong>, <strong>voxel_div_r2</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-spread">
+        <span class="count">1 feature</span>
+        <h3>Runde-1 intern spredning</h3>
+        <p>
+          Gjennomsnittlig parvis euklidsk avstand mellom de 16 runde-1-vinnerne i
+          normalisert RGB. En annen variant av "holdt denne brukeren seg nær én
+          farge eller vandret de rundt?".
+        </p>
+        <p class="feat-names">
+          <strong>r1_internal_spread</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-r1q">
+        <span class="count">208 features · 13 per spørsmål × 16 spørsmål</span>
+        <h3>Per runde-1-spørsmål</h3>
+        <p>
+          For hvert av de 16 runde-1-spørsmålene får modellen et fullstendig bilde av
+          hva som var på skjermen og hva brukeren valgte. Per spørsmål (<code>q00</code>
+          til <code>q15</code>):
+        </p>
+        <p class="feat-names">
+          <strong>q<i>NN</i>_chosen_*</strong> &mdash; den samme 8-tallsfargeblokken som
+          "Endelig farge"-gruppen (r, g, b, h, s, l, warmth, chroma) men for
+          fargen brukeren valgte i spørsmål <i>NN</i>.<br>
+          <strong>q<i>NN</i>_dr, q<i>NN</i>_dg, q<i>NN</i>_db</strong> &mdash; kanalvis
+          delta fra den valgte fargen til gjennomsnittet av de tre avviste fargene.<br>
+          <strong>q<i>NN</i>_decisive</strong> &mdash; lengden av den delta-vektoren.
+          Høy = den valgte fargen var veldig forskjellig fra de avviste.<br>
+          <strong>q<i>NN</i>_pos</strong> &mdash; hvilket av de 4 hjørnene (0&ndash;3)
+          den valgte fargen befant seg i.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-decisive">
+        <span class="count">2 features</span>
+        <h3>Besluttsomhetsaggregat</h3>
+        <p>
+          Gjennomsnitt og standardavvik av de 16 per-spørsmåls-besluttsomhetsstørrelsene.
+          Et enkelt sammendrag av "hvor sterke er denne brukerens preferanser?".
+        </p>
+        <p class="feat-names">
+          <strong>mean_decisiveness</strong>, <strong>std_decisiveness</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-r2q">
+        <span class="count">36 features · 9 per spørsmål × 4 spørsmål</span>
+        <h3>Per runde-2-spørsmål</h3>
+        <p>
+          Samme fargeblokk som runde-1 pluss hjørnepositionen brukeren valgte, for
+          hvert av de 4 runde-2-spørsmålene. Ingen "delta fra avviste" her fordi
+          i runde 2 var alle alternativene allerede godkjent i runde 1, så deltaet
+          er mindre informativt.
+        </p>
+        <p class="feat-names">
+          <strong>r2q<i>N</i>_chosen_*</strong> (r, g, b, h, s, l, warmth, chroma),
+          <strong>r2q<i>N</i>_pos</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-pos">
+        <span class="count">5 features</span>
+        <h3>Posisjonsvalg-aggregat</h3>
+        <p>
+          Hvilken andel av de 16 runde-1-valgene landet i hvert av de fire
+          hjørneplasseringene, pluss Shannon-entropien til den fordelingen. Kjedelige
+          barn trykker på samme hjørne; engasjerte brukere sprer seg ut.
+        </p>
+        <p class="feat-names">
+          <strong>pos_0_frac, pos_1_frac, pos_2_frac, pos_3_frac</strong>, <strong>pos_entropy</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-hist">
+        <span class="count">64 features · 4×4×4 voxel-gitter</span>
+        <h3>Runde-1 voxel-histogram</h3>
+        <p>
+          De 16 runde-1-vinnerne binnet inn i et 4×4×4 RGB-voxel-gitter (så
+          hvert bin har 64-kubikanter), deretter hvert bin delt på 16. Trær elsker
+          denne typen tette lavopp­løsningshistogrammer for å plukke ut "denne
+          brukeren foretrekker den mørkeblå delen av fargerommet".
+        </p>
+        <p class="feat-names">
+          <strong>hist_v00</strong> til <strong>hist_v63</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-ref">
+        <span class="count">13 features · 12 avstander + nærmeste</span>
+        <h3>Referansefargeav­stander</h3>
+        <p>
+          Euklidsk avstand i normalisert RGB fra finale-valg-fargen til hver av
+          12 håndplukkede referansefarger (rosa, rød, oransje, gul, grønn, cyan,
+          blå, lilla, brun, grå, svart, hvit), pluss indeksen til den nærmeste.
+          Poenget er å gi modellen et forsprang på å karte fargerommet langs akser
+          som allerede betyr noe for mennesker, uten å tvinge modellen til å
+          oppdage "nær rosa" fra rå RGB.
+        </p>
+        <p class="feat-names">
+          <strong>final_to_pink, final_to_red, ..., final_to_white</strong>,
+          <strong>final_closest_ref</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-final-dist">
+        <span class="count">2 features</span>
+        <h3>Finale-til-runde-gjennomsnitt</h3>
+        <p>
+          Avstand i normalisert RGB fra finalevelget til runde-1-vinnergjennomsnittet,
+          og fra finalevelget til runde-2-vinnergjennomsnittet. Konvergerte brukeren
+          gjennom turneringen, eller valgte de noe utenom-trend til slutt?
+        </p>
+        <p class="feat-names">
+          <strong>final_to_r1_mean</strong>, <strong>final_to_r2_mean</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-trajectory">
+        <span class="count">6 features</span>
+        <h3>Runde-1-bane</h3>
+        <p>
+          Behandler de 16 runde-1-vinnerne som en sti gjennom RGB-rommet. Gjennomsnitt
+          og std av steg-til-steg-avstand, gjennomsnittlig avstand til sentroiden,
+          og stigningstall for varme, lyshet og metning over spørsmålsindeks. Plukker
+          opp drifter som "ble trøtt og begynte å klikke blått".
+        </p>
+        <p class="feat-names">
+          <strong>r1_consec_mean, r1_consec_std</strong>,
+          <strong>r1_centroid_mean_dist</strong>,
+          <strong>r1_warmth_slope, r1_light_slope, r1_sat_slope</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-extreme">
+        <span class="count">6 features</span>
+        <h3>Ekstremvalg-tellinger</h3>
+        <p>
+          For hvert runde-1-spørsmål: var den valgte fargen den varmeste / kuleste /
+          lyseste / mørkeste / mest-mettede / minst-mettede av de 4 tilbudte?
+          Hver feature er andelen av de 16 spørsmålene der svaret er ja.
+        </p>
+        <p class="feat-names">
+          <strong>extreme_warmest_frac, extreme_coolest_frac, extreme_lightest_frac,
+          extreme_darkest_frac, extreme_most_sat_frac, extreme_least_sat_frac</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-time-bucket">
+        <span class="count">5 features</span>
+        <h3>Runde-1 tids-buckets</h3>
+        <p>
+          Per-spørsmåls-tidsdeltas for de 16 runde-1-spørsmålene binnet i fem
+          buckets: under 1s, 1&ndash;3s, 3&ndash;7s, 7&ndash;15s, 15s+. Hver verdi er
+          en andel som summerer til ~1. Plukker opp "skummer vs leser"-mønstre.
+        </p>
+        <p class="feat-names">
+          <strong>r1_tbucket_0</strong> til <strong>r1_tbucket_4</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-time-x">
+        <span class="count">2 features</span>
+        <h3>Tid × atferdsinteraksjoner</h3>
+        <p>
+          To håndlagede interaksjoner som trærne kanskje ville konstruere på egenhånd
+          til slutt, men som er nyttig å mate dem direkte:
+        </p>
+        <p class="feat-names">
+          <strong>time_x_low_entropy</strong> = gjennomsnittlig spørsmålstid × (1 &minus;
+          posisjons-entropi / log 4). Høy = langsom <em>og</em> konsentrert plukking,
+          "bevisst hjørneklikker"-signalet.<br>
+          <strong>time_per_decisive</strong> = gjennomsnittlig spørsmålstid / (gjennomsnittlig
+          besluttsomhet + 50). Hvor mye tid brukeren bruker per preferanseenhet.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-timing">
+        <span class="count">12 features</span>
+        <h3>Tidssammendrag</h3>
+        <p>
+          Aggregatstatistikk over de 21 per-spørsmåls-tidsdeltas pluss runde-
+          gjennomsnittene og det lineære stigningstallet over hele sesjonen.
+        </p>
+        <p class="feat-names">
+          <strong>total_sec</strong>,
+          <strong>mean_q_ms, std_q_ms, min_q_ms, max_q_ms, median_q_ms</strong>,
+          <strong>first5_mean_ms, last5_mean_ms</strong>,
+          <strong>time_slope</strong>,
+          <strong>r1_mean_ms, r2_mean_ms, final_ms</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-tq">
+        <span class="count">21 features</span>
+        <h3>Per-spørsmål råtider</h3>
+        <p>
+          Den rå tiden brukt på hvert av de 21 spørsmålene, i sekunder.
+        </p>
+        <p class="feat-names">
+          <strong>t_q00</strong> til <strong>t_q20</strong>.
+        </p>
+      </article>
+
+      <article class="feat-block" id="b-hour">
+        <span class="count">3 features</span>
+        <h3>Time på dagen</h3>
+        <p>
+          Tidspunktet sesjonen ble registrert, kodet som sinus og cosinus av
+          brøktimedelen i Oslo-tid (slik at midnatt og middag ikke er tilstøtende
+          i feature-rommet). <code>hour_known</code>-flagget er 0 når tidsstempel-
+          parsingen feilet, noe som lar trærne behandle ukjent-time-sesjoner separat.
+        </p>
+        <p class="feat-names">
+          <strong>hour_sin</strong>, <strong>hour_cos</strong>, <strong>hour_known</strong>.
+        </p>
+      </article>
+    </section>
+
+    <section class="project-section">
+      <h2>Utdatafiler</h2>
+      <p style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        Å kjøre <code>python features.py</code> skriver tre filer til
+        <code>training/</code> som alle trebaserte arkitekturer laster:
+      </p>
+      <ul style="font-family: var(--mono); font-size: 12px; line-height: 1.7;">
+        <li><code>features.npy</code> &mdash; <code>float32</code>, form <code>[6710, 441]</code></li>
+        <li><code>targets.npz</code> &mdash; kjønn (<code>int8</code>), alder (<code>int16</code>), humør (<code>int16</code>)</li>
+        <li><code>feature_names.json</code> &mdash; de 441 kolonnenavnene, i rekkefølge</li>
+      </ul>
+    </section>
+
+    <section class="project-section">
+      <h2>Prosjektlenker</h2>
+      <div class="project-links">
+        <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/features.py" target="_blank" rel="noopener">features.py på GitHub</a>
+        <a href="https://github.com/andreasviner/color-analyzer-ai/blob/main/training/feature_names.json" target="_blank" rel="noopener">feature_names.json</a>
+      </div>
+    </section>
+
+    <a href="../index.html" class="project-back">Tilbake til AI-arkitekturleaderboard</a>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Andreas Lindeman</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

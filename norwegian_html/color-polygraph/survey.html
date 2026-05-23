@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test the model · Color Polygraph · Andreas Lindeman</title>
-  <meta name="description" content="Pick colors through a 21-question elimination bracket. When you finish, the model tries to predict your gender, age, and current mood from nothing but your color choices." />
-  <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/survey.html" />
+  <title>Test modellen · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Velg farger gjennom en 21-spørsmåls cup. Når du er ferdig, prøver modellen å gjette kjønn, alder og humøret ditt basert kun på fargene du valgte." />
+  <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/survey.html" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -248,25 +248,25 @@
 </head>
 <body>
 
-  <nav class="site-nav" aria-label="Primary">
-    <a href="https://andreaslindeman.com/" class="brand">
+  <nav class="site-nav" aria-label="Hoved">
+    <a href="https://andreaslindeman.no/" class="brand">
       <span class="brand-mark">AL</span>
       <span class="brand-name">Andreas Lindeman</span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Åpne meny">
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
       <span class="nav-toggle-bar" aria-hidden="true"></span>
     </button>
     <ul id="nav-links-list" class="nav-links">
-      <li><a href="https://andreaslindeman.com/#about">About</a></li>
-      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
-      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
-      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+      <li><a href="https://andreaslindeman.no/#about">Om</a></li>
+      <li><a href="https://andreaslindeman.no/#timeline">Tidslinje</a></li>
+      <li><a href="https://andreaslindeman.no/#stack">Verktøy</a></li>
+      <li><a href="https://andreaslindeman.no/#contact">Kontakt</a></li>
     </ul>
-    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.no" href="https://ai.andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+    <a class="lang-switch" data-lang-base="https://ai.andreaslindeman.com" href="https://ai.andreaslindeman.com/" hreflang="en" aria-label="Switch to English">
       <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
-      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+      <span class="lang-pair"><span class="lang-current">NO</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">EN</span></span>
     </a>
   </nav>
   <script>
@@ -275,8 +275,8 @@
       if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
       var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
       if(btn&&nav){
-        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open menu');}
-        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Close menu':'Open menu');});
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Åpne meny');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Lukk meny':'Åpne meny');});
         nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
         document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
         document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
@@ -285,7 +285,7 @@
   </script>
 
   <main class="project-page">
-    <a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back">Back to Color Polygraph</a>
+    <a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back">Tilbake til Color Polygraph</a>
 
     <div class="project-meta-row">
       <span class="cat-tag"><span class="cat-swatch hobby"></span> hobby</span>
@@ -293,23 +293,22 @@
       <span>Color Polygraph</span>
     </div>
 
-    <h1 class="project-title">Test the <em>model</em></h1>
+    <h1 class="project-title">Test <em>modellen</em></h1>
 
     <p class="project-lede">
-      Pick your way through a 21-question color bracket — four swatches at a time,
-      twenty-one picks, one winner. When you finish, your choices are sent to a
-      machine learning model that tries to predict your gender, age, and current
-      mood from nothing but which colors you picked.
+      Velg deg gjennom en 21-spørsmåls fargecup — fire farger om gangen, tjueen valg,
+      én vinner. Når du er ferdig, sendes valgene dine til en maskinlæringsmodell som
+      prøver å gjette kjønn, alder og humøret ditt basert kun på hvilke farger du valgte.
     </p>
 
     <div class="sv-cta-wrap" id="svCtaWrap">
       <button type="button" class="sv-start-btn" id="svStartBtn">Start</button>
-      <p class="sv-cta-sub">about two minutes &middot; picks sent to the model</p>
+      <p class="sv-cta-sub">omtrent to minutter &middot; valgene sendes til modellen</p>
     </div>
 
     <section class="project-section">
       <div class="sv-stage" id="svStage">
-        <div class="sv-grid" id="svGrid" role="radiogroup" aria-label="Pick your favourite of these four colors"></div>
+        <div class="sv-grid" id="svGrid" role="radiogroup" aria-label="Velg din favoritt blant disse fire fargene"></div>
         <div class="sv-progress-center" aria-hidden="true">
           <div class="sv-progress-ring">
             <svg viewBox="0 0 72 72">
@@ -323,19 +322,19 @@
         </div>
         <div class="sv-overlay" id="svOverlay">
           <div class="sv-overlay-inner">
-            <p class="sv-overlay-main">press the colors you enjoy the most</p>
-            <p class="sv-overlay-sub">press anywhere to continue</p>
+            <p class="sv-overlay-main">trykk på fargene du liker best</p>
+            <p class="sv-overlay-sub">trykk hvor som helst for å fortsette</p>
           </div>
         </div>
       </div>
     </section>
 
-    <a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back">Back to Color Polygraph</a>
+    <a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back">Tilbake til Color Polygraph</a>
   </main>
 
   <footer class="site-footer">
     <span>© <span id="year"></span> Andreas Lindeman</span>
-    <span class="footer-meta">Built by hand · No frameworks · Hosted on GitHub Pages</span>
+    <span class="footer-meta">Håndbygget · Uten rammeverk · Servert av GitHub Pages</span>
   </footer>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
@@ -421,7 +420,7 @@
         btn.style.setProperty('--c', color.hex);
         btn.setAttribute('role', 'radio');
         btn.setAttribute('aria-checked', 'false');
-        btn.setAttribute('aria-label', 'Pick ' + color.hex);
+        btn.setAttribute('aria-label', 'Velg ' + color.hex);
         btn.classList.add(luminance(color.rgb) > 0.55 ? 'is-light' : 'is-dark');
         const sw = document.createElement('span');
         sw.className = 'sv-card-swatch';
