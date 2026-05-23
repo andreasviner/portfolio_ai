@@ -1,85 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/survey.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/survey.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/[slug]/</loc>
+    <loc>https://ai.andreaslindeman.no/[slug]/</loc>
     <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/info/features.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/info/features.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/baselines.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/baselines.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/bigru.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/bigru.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/hybrid-blend.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/hybrid-blend.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/lgb-buckets.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/lgb-buckets.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/lgb-perceptual.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/lgb-perceptual.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/lgb-production.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/lgb-production.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/lgb-search.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/lgb-search.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/lstm.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/lstm.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/stacked-gbm.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/stacked-gbm.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/color-polygraph/models/transformer.html</loc>
+    <loc>https://ai.andreaslindeman.no/color-polygraph/models/transformer.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
