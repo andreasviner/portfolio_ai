@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-portfolio",
+  "compatibility_date": "2026-05-23",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "english_html"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
