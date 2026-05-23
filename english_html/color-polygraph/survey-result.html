@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your results · Color Polygraph · Andreas Lindeman</title>
+  <meta name="description" content="Color Polygraph results: see what the AI guessed about your gender, age, and mood from 21 colour picks." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="icon" type="image/png" href="../icon.png" />
+  <style>
+    /* Full-bleed fullscreen immediately */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    body .site-nav { flex-shrink: 0; }
+    .rv-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ---- Reveal slides ---- */
+    .rv-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(28px, 6vh, 72px) clamp(28px, 6vw, 96px);
+      opacity: 0;
+      transform: translateX(56px);
+      transition: opacity 0.4s ease, transform 0.42s cubic-bezier(.22,.68,0,1.1);
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .rv-slide.is-current {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .rv-slide.is-leaving {
+      opacity: 0;
+      transform: translateX(-56px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      pointer-events: none;
+    }
+    /* ambient winner-color glow */
+    .rv-slide::after {
+      content: '';
+      position: fixed;
+      top: -100px; right: -100px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: var(--winner-color, transparent);
+      opacity: 0.055;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* step dots */
+    .rv-dots {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 48px;
+      align-items: center;
+    }
+    .rv-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--hairline-2);
+      flex-shrink: 0;
+      transition: background .35s ease, transform .35s ease;
+    }
+    .rv-dot.is-done { background: var(--text-dim); }
+    .rv-dot.is-active { background: var(--hobby); transform: scale(1.35); }
+    .rv-dot-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-left: 6px;
+    }
+
+    /* center (loading) */
+    .rv-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+      gap: 22px;
+      text-align: center;
+    }
+    .rv-spinner {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2.5px solid var(--hairline-2);
+      border-top-color: var(--hobby);
+      animation: rv-spin 0.75s linear infinite;
+    }
+    @keyframes rv-spin { to { transform: rotate(360deg); } }
+    .rv-loading-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 0;
+    }
+    .rv-error {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #d97b6a;
+      letter-spacing: 0.04em;
+      text-align: center;
+      line-height: 1.7;
+    }
+    .rv-error a {
+      color: var(--hobby);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* prediction display */
+    .rv-eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 14px;
+    }
+    .rv-big {
+      font-family: var(--serif);
+      font-style: italic;
+      font-variation-settings: "opsz" 72, "SOFT" 60;
+      font-size: clamp(52px, 11vw, 104px);
+      line-height: 1;
+      color: var(--hobby);
+      margin: 0 0 12px;
+    }
+    .rv-conf {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 0 0 36px;
+    }
+    .rv-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+    .rv-btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 11px 18px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s, color .15s, background .15s;
+    }
+    .rv-btn.is-yes {
+      background: rgba(245, 185, 92, 0.12);
+      color: var(--hobby);
+      border: 1px solid rgba(245, 185, 92, 0.4);
+    }
+    .rv-btn.is-yes:hover {
+      background: rgba(245, 185, 92, 0.18);
+      border-color: rgba(245, 185, 92, 0.6);
+      transform: translateY(-1px);
+    }
+    .rv-btn.is-no {
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px solid var(--hairline);
+    }
+    .rv-btn.is-no:hover { color: var(--text); border-color: var(--hairline-2); }
+
+    /* censored overlay — gender slide */
+    .rv-censor {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 36%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .rv-censor::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(20px) saturate(0.2) brightness(0.6);
+      -webkit-backdrop-filter: blur(20px) saturate(0.2) brightness(0.6);
+      background: linear-gradient(to bottom, rgba(10,13,24,0.05) 0%, rgba(10,13,24,0.85) 100%);
+    }
+    .rv-censor-bar {
+      position: absolute;
+      left: 0; right: 0;
+      top: 28%;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .rv-censor-bar span {
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.13);
+    }
+
+    /* age input */
+    .rv-age-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .rv-age-wrap input[type="number"] {
+      font-family: var(--mono);
+      font-size: 32px;
+      width: 96px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--hairline-2);
+      border-radius: 3px;
+      color: var(--hobby);
+      text-align: center;
+      appearance: textfield;
+      -moz-appearance: textfield;
+      -webkit-appearance: textfield;
+      letter-spacing: 0.04em;
+    }
+    .rv-age-wrap input[type="number"]::-webkit-outer-spin-button,
+    .rv-age-wrap input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; appearance: none; }
+    .rv-age-wrap input[type="number"]:focus {
+      outline: none;
+      border-color: rgba(245, 185, 92, 0.5);
+    }
+    .rv-hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    /* mood slider */
+    .rv-slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+      max-width: 380px;
+    }
+    .rv-slider-wrap input[type="range"] {
+      width: 100%;
+      accent-color: var(--hobby);
+      cursor: pointer;
+    }
+    .rv-slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* stats slide */
+    .rv-stats-layout {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 24px;
+    }
+    .rv-winner-swatch {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      border: 1px solid var(--hairline);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .rv-winner-hex {
+      font-family: var(--mono);
+      font-size: 26px;
+      letter-spacing: 0.05em;
+      color: var(--hobby);
+      margin: 0 0 4px;
+    }
+    .rv-winner-rgb {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-mute);
+      margin: 0 0 18px;
+    }
+    .rv-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .rv-pill {
+      padding: 4px 11px;
+      border: 1px solid var(--hairline-2);
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      color: var(--text-mute);
+      background: var(--surface);
+    }
+    .rv-pill b { color: var(--hobby); font-weight: 500; }
+    .rv-hue-strip {
+      display: flex;
+      height: 6px;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+      border: 1px solid var(--hairline);
+    }
+    .rv-hue-strip-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+      margin: 0 0 24px;
+    }
+    .rv-score {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-mute);
+      margin: 0 0 20px;
+    }
+    .rv-score b { color: var(--hobby); }
+    .rv-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .rv-retake {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 13px 28px;
+      background: var(--hobby);
+      color: var(--bg);
+      border: 0;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform .15s ease, filter .15s ease;
+      box-shadow: 0 6px 20px rgba(245, 185, 92, 0.2);
+    }
+    .rv-retake:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .rv-share {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 13px 20px;
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px solid var(--hairline);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .rv-share:hover { color: var(--text); border-color: var(--hairline-2); }
+    .rv-share-toast {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--hobby);
+    }
+
+    @media (max-width: 600px) {
+      .rv-stats-layout { grid-template-columns: 1fr; }
+      .rv-winner-swatch { max-width: 130px; }
+      .rv-big { font-size: clamp(44px, 18vw, 80px); }
+      .rv-slide { padding: 20px 20px; }
+      .rv-dots { margin-bottom: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" aria-label="Primary">
+    <a href="https://andreaslindeman.com/" class="brand">
+      <span class="brand-mark">AL</span>
+      <span class="brand-name">Andreas Lindeman</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links-list" aria-label="Open menu">
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <ul id="nav-links-list" class="nav-links">
+      <li><a href="https://andreaslindeman.com/#about">About</a></li>
+      <li><a href="https://andreaslindeman.com/#timeline">Timeline</a></li>
+      <li><a href="https://andreaslindeman.com/#stack">Stack</a></li>
+      <li><a href="https://andreaslindeman.com/#contact">Contact</a></li>
+    </ul>
+    <a class="lang-switch" data-lang-base="https://andreaslindeman.no" href="https://andreaslindeman.no/" hreflang="no" aria-label="Switch to Norwegian">
+      <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg>
+      <span class="lang-pair"><span class="lang-current">EN</span><span class="lang-sep" aria-hidden="true">/</span><span class="lang-target">NO</span></span>
+    </a>
+  </nav>
+  <script>
+    (function(){
+      var s=document.querySelector('.lang-switch');
+      if(s&&s.dataset.langBase)s.href=s.dataset.langBase+location.pathname+location.search+location.hash;
+      var nav=document.querySelector('.site-nav'),btn=document.querySelector('.nav-toggle');
+      if(btn&&nav){
+        function closeMenu(){nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open menu');}
+        btn.addEventListener('click',function(e){e.stopPropagation();var open=nav.classList.toggle('is-open');btn.setAttribute('aria-expanded',open?'true':'false');btn.setAttribute('aria-label',open?'Close menu':'Open menu');});
+        nav.querySelectorAll('.nav-links a').forEach(function(a){a.addEventListener('click',closeMenu);});
+        document.addEventListener('click',function(e){if(nav.classList.contains('is-open')&&!nav.contains(e.target))closeMenu();});
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&nav.classList.contains('is-open'))closeMenu();});
+      }
+    })();
+  </script>
+
+  <div class="rv-wrap" id="rvWrap"></div>
+
+  <script src="./models-js/tree_walker.js"></script>
+  <script>
+  (function () {
+    const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
+    const API_URL = (function () {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('api')) return p.get('api').replace(/\/$/, '');
+      } catch (_e) {}
+      return (typeof window !== 'undefined' && window.COLOR_POLYGRAPH_API)
+        ? window.COLOR_POLYGRAPH_API.replace(/\/$/, '')
+        : DEFAULT_API_URL;
+    })();
+    const MODELS_BASE = './models-js/';
+    const MODEL_CACHE = Object.create(null);
+
+    function loadModel(name) {
+      if (MODEL_CACHE[name]) return MODEL_CACHE[name];
+      const url = MODELS_BASE + name + '_trees.json';
+      MODEL_CACHE[name] = TreeWalker.load(url).catch(err => { delete MODEL_CACHE[name]; throw err; });
+      return MODEL_CACHE[name];
+    }
+
+    async function postJson(path, body) {
+      const r = await fetch(API_URL + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        let detail = '';
+        try { detail = (await r.json()).error || ''; } catch (_e) {}
+        throw new Error('HTTP ' + r.status + (detail ? ' - ' + detail : ''));
+      }
+      return r.json();
+    }
+
+    async function getJson(path) {
+      const r = await fetch(API_URL + path);
+      if (!r.ok) {
+        let detail = '';
+        try { detail = (await r.json()).error || ''; } catch (_e) {}
+        throw new Error('HTTP ' + r.status + (detail ? ' - ' + detail : ''));
+      }
+      return r.json();
+    }
+
+    // ---- Slide engine ----
+    const wrap = document.getElementById('rvWrap');
+    let _current = null;
+
+    function goSlide(buildFn) {
+      if (_current) {
+        const old = _current;
+        old.classList.remove('is-current');
+        old.classList.add('is-leaving');
+        setTimeout(() => { if (old.parentNode) old.remove(); }, 400);
+        _current = null;
+      }
+      const s = document.createElement('div');
+      s.className = 'rv-slide';
+      wrap.appendChild(s);
+      buildFn(s);
+      requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-current')));
+      _current = s;
+      return s;
+    }
+
+    function makeDots(activeKey) {
+      const steps = ['gender', 'age', 'mood', 'stats'];
+      const ai = steps.indexOf(activeKey);
+      return '<div class="rv-dots">' +
+        steps.map((s, i) => '<span class="rv-dot' + (i < ai ? ' is-done' : i === ai ? ' is-active' : '') + '"></span>').join('') +
+        '<span class="rv-dot-label">' + activeKey + '</span>' +
+        '</div>';
+    }
+
+    function moodLabel(v) {
+      if (v >= 45) return 'happy';
+      if (v >= 30) return 'okay';
+      if (v >= 15) return 'down';
+      return 'glum';
+    }
+
+    function rgbToHsl([r, g, b]) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const l = (max + min) / 2;
+      if (max === min) return [0, 0, Math.round(l * 100)];
+      const d = max - min;
+      const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      let h;
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        default: h = ((r - g) / d + 4) / 6;
+      }
+      return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+    }
+
+    function buildHueStrip(history) {
+      const allPicks = [];
+      history.forEach(round => round.forEach(p => allPicks.push(p.winner)));
+      const sorted = allPicks.slice().sort((a, b) => rgbToHsl(a.rgb)[0] - rgbToHsl(b.rgb)[0]);
+      const chips = sorted.map(c => '<div style="flex:1;min-width:2px;background:' + c.hex + '"></div>').join('');
+      return '<div class="rv-hue-strip">' + chips + '</div><p class="rv-hue-strip-label">All your picks sorted by hue</p>';
+    }
+
+    function paletteTone(history) {
+      const picks = [];
+      history.forEach(round => round.forEach(p => picks.push(p.winner.rgb)));
+      if (!picks.length) return 'mixed';
+      const avg = picks.reduce((s, rgb) => s + rgbToHsl(rgb)[0], 0) / picks.length;
+      return avg < 50 || avg > 310 ? 'warm' : avg > 140 && avg < 270 ? 'cool' : 'mixed';
+    }
+
+    function buildPayload(savedState) {
+      const round1 = savedState.history[0];
+      const round2 = savedState.history[1];
+      const round3 = savedState.history[2];
+      const offered = [];
+      round1.forEach(step => step.options.forEach(c => offered.push(c.rgb)));
+      return {
+        offered,
+        r1: round1.map(s => s.winner.rgb),
+        r2: round2.map(s => s.winner.rgb),
+        final: round3[0].winner.rgb,
+        valg: savedState.picks.map(p => String(p.position)).join(''),
+        tider: savedState.picks.map(p => p.cumulativeMs),
+      };
+    }
+
+    function buildMetadata(savedState) {
+      const ua = navigator.userAgent || '';
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod|IEMobile|Opera Mini/.test(ua)
+        || (navigator.maxTouchPoints > 0 && window.matchMedia('(pointer: coarse)').matches);
+      let timezone = '';
+      try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_e) {}
+      return {
+        client_started_at: savedState.startMs,
+        client_submitted_at: Date.now(),
+        client_local_time: new Date().toISOString(),
+        user_agent: ua,
+        referrer: document.referrer || '',
+        language: navigator.language || '',
+        locale: (navigator.languages || []).join(','),
+        is_mobile: isMobile,
+        screen_w: window.screen ? window.screen.width : null,
+        screen_h: window.screen ? window.screen.height : null,
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        timezone_client: timezone,
+      };
+    }
+
+    function showStatsSlide(opts) {
+      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId } = opts;
+      const tone = history ? paletteTone(history) : '—';
+      const totalMs = picks && picks.length ? picks[picks.length - 1].cumulativeMs : 0;
+      const totalS = Math.round(totalMs / 1000);
+      const timeStr = totalS >= 60 ? Math.floor(totalS / 60) + 'm ' + (totalS % 60) + 's' : totalS > 0 ? totalS + 's' : '—';
+      const shareUrl = window.location.origin + window.location.pathname + window.location.search;
+
+      const pillsHtml = [
+        confirmedGender ? '<span class="rv-pill">Gender <b>' + confirmedGender + '</b></span>' : '',
+        confirmedAge != null ? '<span class="rv-pill">Age <b>' + confirmedAge + '</b></span>' : '',
+        confirmedMood != null ? '<span class="rv-pill">Mood <b>' + moodLabel(confirmedMood) + '</b></span>' : '',
+        tone !== '—' ? '<span class="rv-pill">Palette <b>' + tone + '</b></span>' : '',
+        timeStr !== '—' ? '<span class="rv-pill">Time <b>' + timeStr + '</b></span>' : '',
+      ].join('');
+
+      goSlide(s => {
+        s.innerHTML =
+          makeDots('stats') +
+          '<div class="rv-stats-layout">' +
+            '<div class="rv-winner-swatch" style="background:' + w.hex + '"></div>' +
+            '<div>' +
+              '<p class="rv-eyebrow">Your favourite color</p>' +
+              '<p class="rv-winner-hex">' + w.hex.toUpperCase() + '</p>' +
+              '<p class="rv-winner-rgb">rgb(' + w.rgb[0] + ', ' + w.rgb[1] + ', ' + w.rgb[2] + ')</p>' +
+              '<div class="rv-pills">' + pillsHtml + '</div>' +
+              (history ? buildHueStrip(history) : '') +
+            '</div>' +
+          '</div>' +
+          (score != null ? '<p class="rv-score">The model got <b>' + score + ' of 3</b> correct.</p>' : '') +
+          '<div class="rv-actions">' +
+            '<button type="button" class="rv-retake" id="rvRetake">Retake survey</button>' +
+            '<button type="button" class="rv-share" id="rvShare">Share results</button>' +
+            '<span class="rv-share-toast" id="rvToast" style="display:none">Link copied</span>' +
+          '</div>';
+
+        s.querySelector('#rvRetake').addEventListener('click', () => {
+          window.location.href = 'survey.html';
+        });
+        s.querySelector('#rvShare').addEventListener('click', () => {
+          const shareData = {
+            title: 'Color Polygraph',
+            text: 'My favourite color is ' + w.hex.toUpperCase() + '. The AI guessed ' + (score != null ? score + '/3 of' : 'my') + ' gender, age & mood from 21 colour picks.',
+            url: shareUrl,
+          };
+          const toast = s.querySelector('#rvToast');
+          if (navigator.share) {
+            navigator.share(shareData).catch(() => {});
+            return;
+          }
+          const text = shareData.text + ' ' + shareData.url;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+              toast.style.display = '';
+              setTimeout(() => { toast.style.display = 'none'; }, 2400);
+            }).catch(() => window.prompt('Copy link:', text));
+          } else {
+            window.prompt('Copy link:', text);
+          }
+        });
+      });
+    }
+
+    // ---- ID-based flow (shared link) ----
+    async function runIdFlow(id) {
+      goSlide(s => {
+        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading results…</p></div>';
+      });
+
+      let data;
+      try {
+        data = await getJson('/survey/' + encodeURIComponent(id));
+      } catch (err) {
+        goSlide(s => {
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not load results for this ID.<br><a href="survey.html">Take the survey</a></p></div>';
+        });
+        return;
+      }
+
+      const w = { hex: data.winner_hex, rgb: data.winner_rgb };
+      document.documentElement.style.setProperty('--winner-color', w.hex);
+
+      showStatsSlide({
+        w,
+        confirmedGender: data.confirmed_gender,
+        confirmedAge: data.confirmed_age,
+        confirmedMood: data.confirmed_mood,
+        score: data.correct_count,
+        history: data.history || null,
+        picks: data.picks || null,
+        fromId: true,
+      });
+    }
+
+    // ---- Full interactive reveal flow ----
+    async function runRevealFlow(savedState) {
+      const summary = { correct: 0 };
+      const w = savedState.winner;
+      document.documentElement.style.setProperty('--winner-color', w.hex);
+
+      // LOADING
+      goSlide(s => {
+        s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Sending picks to model…</p></div>';
+      });
+
+      let surveyId = null, features = null;
+      try {
+        const resp = await postJson('/survey', {
+          payload: buildPayload(savedState),
+          metadata: buildMetadata(savedState),
+        });
+        surveyId = resp.id;
+        features = resp.features;
+      } catch (err) {
+        goSlide(s => {
+          s.innerHTML = '<div class="rv-center"><p class="rv-error">Could not reach the inference server.<br>Try again in a moment.</p></div>';
+        });
+        return;
+      }
+
+      // Update URL with the survey ID for shareability
+      try {
+        const newUrl = window.location.pathname + '?id=' + encodeURIComponent(surveyId);
+        history.replaceState(null, '', newUrl);
+      } catch (_e) {}
+
+      // GENDER
+      let predGenderLabel = null, confirmedGender = null;
+      try {
+        goSlide(s => {
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading gender model…</p></div>';
+        });
+        const model = await loadModel('gender');
+        const raw = TreeWalker.score(model, features.gender);
+        const prob = TreeWalker.sigmoid(raw);
+        predGenderLabel = prob >= 0.5 ? 'girl' : 'boy';
+        const other = predGenderLabel === 'girl' ? 'boy' : 'girl';
+        const pct = Math.round(Math.max(prob, 1 - prob) * 100);
+
+        confirmedGender = await new Promise(resolve => {
+          goSlide(s => {
+            s.innerHTML =
+              makeDots('gender') +
+              '<p class="rv-eyebrow">We think you are a</p>' +
+              '<p class="rv-big">' + predGenderLabel + '</p>' +
+              '<p class="rv-conf">' + pct + '% confident</p>' +
+              '<div class="rv-btns">' +
+                '<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ' + other + '</button>' +
+              '</div>' +
+              '<div class="rv-censor" aria-hidden="true">' +
+                '<div class="rv-censor-bar"><span>AGE</span><span>·</span><span>MOOD</span><span>·</span><span>STATS</span></div>' +
+              '</div>';
+            s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
+            s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
+          });
+        });
+
+        if (confirmedGender === predGenderLabel) summary.correct += 1;
+        postJson('/survey/' + encodeURIComponent(surveyId) + '/gender', {
+          pred_prob: prob, confirmed_label: confirmedGender,
+        }).catch(e => console.warn('gender post failed', e));
+      } catch (err) {
+        console.warn('gender step failed', err);
+      }
+
+      // AGE
+      let predAge = null, confirmedAge = null;
+      try {
+        goSlide(s => {
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading age model…</p></div>';
+        });
+        const model = await loadModel('age');
+        predAge = Math.max(6, Math.min(80, TreeWalker.score(model, features.age)));
+        const rounded = Math.round(predAge);
+
+        confirmedAge = await new Promise(resolve => {
+          goSlide(s => {
+            s.innerHTML =
+              makeDots('age') +
+              '<p class="rv-eyebrow">We think you are about</p>' +
+              '<p class="rv-big">' + rounded + '</p>' +
+              '<p class="rv-conf">years old — enter your actual age below</p>' +
+              '<div class="rv-age-wrap">' +
+                '<input type="number" id="rvAgeInp" min="6" max="99" value="' + rounded + '">' +
+                '<span class="rv-hint">enter the same number if correct</span>' +
+              '</div>' +
+              '<div class="rv-btns">' +
+                '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Confirm age</button>' +
+              '</div>';
+            const inp = s.querySelector('#rvAgeInp');
+            inp.focus();
+            const save = () => resolve(Math.max(6, Math.min(99, parseInt(inp.value, 10) || rounded)));
+            s.querySelector('#rvAgeSave').addEventListener('click', save);
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+          });
+        });
+
+        if (Math.abs(confirmedAge - predAge) <= 3) summary.correct += 1;
+        postJson('/survey/' + encodeURIComponent(surveyId) + '/age', {
+          pred_value: predAge, confirmed_value: confirmedAge,
+        }).catch(e => console.warn('age post failed', e));
+      } catch (err) {
+        console.warn('age step failed', err);
+      }
+
+      // MOOD
+      let predMood = null, confirmedMood = null;
+      try {
+        goSlide(s => {
+          s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading mood model…</p></div>';
+        });
+        const model = await loadModel('mood');
+        predMood = Math.max(0, Math.min(60, TreeWalker.score(model, features.mood)));
+        const rounded = Math.round(predMood);
+
+        confirmedMood = await new Promise(resolve => {
+          goSlide(s => {
+            s.innerHTML =
+              makeDots('mood') +
+              '<p class="rv-eyebrow">How are you feeling right now?</p>' +
+              '<p class="rv-big" id="rvMoodWord">' + moodLabel(rounded) + '</p>' +
+              '<div class="rv-slider-wrap">' +
+                '<input type="range" id="rvMoodSlider" min="0" max="60" step="1" value="' + rounded + '">' +
+                '<div class="rv-slider-labels"><span>Glum</span><span>Down</span><span>Okay</span><span>Happy</span></div>' +
+              '</div>' +
+              '<div class="rv-btns">' +
+                '<button type="button" class="rv-btn is-yes" id="rvMoodSave">Confirm mood</button>' +
+              '</div>';
+            const slider = s.querySelector('#rvMoodSlider');
+            const wordEl = s.querySelector('#rvMoodWord');
+            slider.addEventListener('input', () => { wordEl.textContent = moodLabel(parseInt(slider.value, 10)); });
+            s.querySelector('#rvMoodSave').addEventListener('click', () => resolve(parseInt(slider.value, 10)));
+          });
+        });
+
+        if (Math.abs(confirmedMood - predMood) <= 10) summary.correct += 1;
+        postJson('/survey/' + encodeURIComponent(surveyId) + '/mood', {
+          pred_value: predMood, confirmed_value: confirmedMood,
+        }).catch(e => console.warn('mood post failed', e));
+      } catch (err) {
+        console.warn('mood step failed', err);
+      }
+
+      // STATS
+      showStatsSlide({
+        w,
+        confirmedGender,
+        confirmedAge,
+        confirmedMood,
+        score: summary.correct,
+        history: savedState.history,
+        picks: savedState.picks,
+        fromId: false,
+      });
+    }
+
+    // ---- Entry point ----
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (id) {
+        runIdFlow(id);
+        return;
+      }
+
+      let savedState = null;
+      try {
+        const raw = localStorage.getItem('cpgResult');
+        if (raw) {
+          savedState = JSON.parse(raw);
+          localStorage.removeItem('cpgResult');
+        }
+      } catch (_e) {}
+
+      if (!savedState || !savedState.winner) {
+        // No state and no ID — redirect to survey
+        const s = document.createElement('div');
+        s.className = 'rv-slide';
+        wrap.appendChild(s);
+        s.innerHTML = '<div class="rv-center"><p class="rv-error">No survey data found.<br><a href="survey.html">Take the survey</a></p></div>';
+        requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-current')));
+        return;
+      }
+
+      runRevealFlow(savedState);
+    })();
+  })();
+  </script>
+</body>
+</html>
