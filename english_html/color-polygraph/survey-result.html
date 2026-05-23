@@ -750,10 +750,10 @@
               '<p class="rv-eyebrow">We think you are a</p>' +
               '<p class="rv-big">' + predGenderLabel + '</p>' +
               '<p class="rv-conf">' + pct + '% confident</p>' +
-              ‘<div class="rv-btns">’ +
-                ‘<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>’ +
-                ‘<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ‘ + other + ‘</button>’ +
-              ‘</div>’;
+              '<div class="rv-btns">' +
+                '<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ' + other + '</button>' +
+              '</div>';
             s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
             s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
           });
