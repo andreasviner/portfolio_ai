@@ -13,12 +13,6 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ai.andreaslindeman.com/[slug]/</loc>
-    <lastmod>2026-05-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://ai.andreaslindeman.com/color-polygraph/info/features.html</loc>
     <lastmod>2026-05-23</lastmod>
     <changefreq>monthly</changefreq>
