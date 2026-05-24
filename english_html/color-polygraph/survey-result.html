@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your results · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Color Polygraph results: see what the AI guessed about your gender, age, and mood from 21 colour picks." />
+  <link rel="alternate" hreflang="en" href="https://ai.andreaslindeman.com/color-polygraph/survey-result" />
+  <link rel="alternate" hreflang="no" href="https://ai.andreaslindeman.no/color-polygraph/survey-result" />
+  <link rel="alternate" hreflang="x-default" href="https://ai.andreaslindeman.com/color-polygraph/survey-result" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -739,8 +742,8 @@
         const model = await loadModel('gender');
         const raw = TreeWalker.score(model, features.gender);
         const prob = TreeWalker.sigmoid(raw);
-        predGenderLabel = prob >= 0.5 ? 'girl' : 'boy';
-        const other = predGenderLabel === 'girl' ? 'boy' : 'girl';
+        predGenderLabel = prob >= 0.5 ? 'woman' : 'man';
+        const other = predGenderLabel === 'woman' ? 'man' : 'woman';
         const pct = Math.round(Math.max(prob, 1 - prob) * 100);
 
         confirmedGender = await new Promise(resolve => {

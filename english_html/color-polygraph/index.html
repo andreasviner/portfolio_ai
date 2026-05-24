@@ -6,6 +6,9 @@
   <title>AI architectures · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Leaderboard of the model architectures I have re-implemented on the 2020 color polygraph dataset: stacked gradient boosting, transformer, BiGRU, LSTM, and linear baselines." />
   <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/" />
+  <link rel="alternate" hreflang="en" href="https://ai.andreaslindeman.com/color-polygraph/" />
+  <link rel="alternate" hreflang="no" href="https://ai.andreaslindeman.no/color-polygraph/" />
+  <link rel="alternate" hreflang="x-default" href="https://ai.andreaslindeman.com/color-polygraph/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -382,7 +385,7 @@
         Random 5-fold CV had every gender-prediction architecture stalling
         around 0.88 AUC, which made the dataset feel signal-bound rather than
         model-bound. A second attempt at gender modelling - LAB target encoding,
-        per-question "girliest-of-4" decisive-pick features, multi-family bag
+        per-question "most-feminine-of-4" decisive-pick features, multi-family bag
         of LightGBM + XGBoost + CatBoost with a logistic stacker - landed at
         the same 0.882 OOF AUC. To find out whether 6,710 sessions are
         actually <em>enough</em>, I held out the same stratified 710-row
@@ -434,7 +437,7 @@
         target. A single LightGBM with 33 perceptual extras plus 5 target-encoded
         colour-bucket scores edges every other architecture out on gender. The
         bucket scores are the headline win: a 512-cell RGB grid where each cell
-        holds an average "girliness" / "masculinity" delta computed across training
+        holds an average "femininity" / "masculinity" delta computed across training
         users, looked up trilinearly per pick. The signed total of those lookups
         becomes the single highest-gain feature in the entire vector.
       </p>

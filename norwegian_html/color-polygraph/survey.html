@@ -6,6 +6,9 @@
   <title>Test modellen · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Velg farger gjennom en 21-spørsmåls cup. Når du er ferdig, prøver modellen å gjette kjønn, alder og humøret ditt basert kun på fargene du valgte." />
   <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/survey" />
+  <link rel="alternate" hreflang="en" href="https://ai.andreaslindeman.com/color-polygraph/survey" />
+  <link rel="alternate" hreflang="no" href="https://ai.andreaslindeman.no/color-polygraph/survey" />
+  <link rel="alternate" hreflang="x-default" href="https://ai.andreaslindeman.com/color-polygraph/survey" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -76,7 +79,7 @@
       flex-direction: column;
       align-items: center;
       gap: 14px;
-      margin: 36px 0 28px;
+      margin: 36px 0 48px;
     }
     .sv-start-btn {
       font-family: var(--mono);
@@ -106,6 +109,71 @@
       text-transform: uppercase;
       color: var(--text-mute);
       margin: 0;
+    }
+    .sv-info {
+      margin: 56px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    .sv-info-intro {
+      font-family: var(--serif);
+      font-size: clamp(17px, 1.9vw, 21px);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.6;
+    }
+    .sv-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .sv-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sv-info-label {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 1.2;
+      color: var(--hobby);
+      margin: 0;
+      font-variation-settings: "opsz" 48;
+    }
+    .sv-info-desc {
+      font-family: var(--serif);
+      font-size: 16px;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.75;
+    }
+    .sv-info-outro {
+      font-family: var(--serif);
+      font-size: clamp(16px, 1.8vw, 19px);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.65;
+    }
+    .sv-info-link {
+      color: var(--hobby);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(245, 185, 92, 0.4);
+      transition: border-color .15s ease;
+    }
+    .sv-info-link:hover { border-bottom-color: var(--hobby); }
+    .sv-info-help {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(15px, 1.7vw, 18px);
+      color: var(--text-mute);
+      margin: 0;
+      line-height: 1.65;
     }
     .sv-overlay {
       position: absolute;
@@ -304,6 +372,26 @@
     <div class="sv-cta-wrap" id="svCtaWrap">
       <button type="button" class="sv-start-btn" id="svStartBtn">Start</button>
       <p class="sv-cta-sub">omtrent to minutter &middot; valgene sendes til modellen</p>
+    </div>
+
+    <div class="sv-info">
+      <p class="sv-info-intro">Dette er mer enn en favorittfargetest. Etter at du har fullført testen, sendes valgene dine til tre forskjellige modeller som hver prøver å forutsi noe forskjellig om deg.</p>
+      <ul class="sv-info-list">
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Fargekjønnstest</h3>
+          <p class="sv-info-desc">En modell trent til å gjenkjenne kjønn ut fra fargevalg er den første som analyserer valgene dine. Kjønnsmodellen er veldig nøyaktig, men ikke perfekt, den treffer rundt 90 % av tiden på dataene den har nå, men fargevalg endrer seg over tid. Du kan til og med se en tydelig forskjell selv når du visualiserer dataene mellom menn og kvinner i <a class="sv-info-link" href="https://andreaslindeman.no/projects/color-polygraph#explore-data">datautforskeren</a>.</p>
+        </li>
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Fargealderstest</h3>
+          <p class="sv-info-desc">De samme valgene sendes videre til en aldersmodell som prøver å estimere alderen din ut fra resultatene. Alder er mye vanskeligere å lese ut av farger alene enn kjønn er. Modellen lander vanligvis innen rundt 6 år fra den faktiske alderen, noe som høres grovt ut først, men det er faktisk nærmere enn de fleste kunne gjettet en fremmed bare ut fra favorittfargene deres. Det finnes likevel tydelige trender i dataene, yngre og eldre lener seg mot synlig ulike paletter, og du kan utforske de skiftene selv i <a class="sv-info-link" href="https://andreaslindeman.no/projects/color-polygraph#explore-data">datautforskeren</a>.</p>
+        </li>
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Fargehumørtest</h3>
+          <p class="sv-info-desc">Fargevalgene dine brukes til slutt i en tredje humørmodell som prøver å avdekke humøret ditt i øyeblikket du tok testen. Humør er det desidert vanskeligste av de tre å forutsi. Folks egenrapporterte humør er ganske subjektivt, og koblingen mellom favorittfarger og humør er mye svakere enn for kjønn eller alder. På en skala fra 0 (glad) til 60 (nedstemt) lander modellen vanligvis rundt 9 poeng unna, nok til å være i riktig retning, men sjelden helt presist.</p>
+        </li>
+      </ul>
+      <p class="sv-info-outro">Vil du vite mer om modellene bak prediksjonene? <a class="sv-info-link" href="/color-polygraph">AI-arkitektur-oversikten</a> sammenligner alle versjonene side om side, og <a class="sv-info-link" href="https://andreaslindeman.no/projects/color-polygraph">hovedprosjektsiden</a> dekker historien og dataene bak det hele.</p>
+      <p class="sv-info-help">Etter testen blir du også spurt om å rette opp modellen hvis den gjettet feil. Det hadde vært til stor hjelp om du gjorde det :))</p>
     </div>
 
     <section class="project-section">

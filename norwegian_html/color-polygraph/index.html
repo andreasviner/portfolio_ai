@@ -6,6 +6,9 @@
   <title>AI-arkitekturer · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Leaderboard over modellarkitekturene jeg har reimplementert på 2020 color polygraph-datasettet: stablet gradient boosting, transformer, BiGRU, LSTM og lineære basislinjer." />
   <link rel="canonical" href="https://ai.andreaslindeman.no/color-polygraph/" />
+  <link rel="alternate" hreflang="en" href="https://ai.andreaslindeman.com/color-polygraph/" />
+  <link rel="alternate" hreflang="no" href="https://ai.andreaslindeman.no/color-polygraph/" />
+  <link rel="alternate" hreflang="x-default" href="https://ai.andreaslindeman.com/color-polygraph/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -367,7 +370,7 @@
         Tilfeldig 5-fold CV hadde alle kjønnsmodelleringsarkitekturer kjørende fast
         rundt 0.88 AUC, noe som fikk datasettet til å virke signalbundet snarere enn
         modellbundet. Et nytt forsøk på kjønnsmodellering – LAB-målkoding, per-spørsmål
-        "jenteaktigst-av-4" besluttsomhets-features, multi-familie bag av LightGBM +
+        "mest-feminin-av-4" besluttsomhets-features, multi-familie bag av LightGBM +
         XGBoost + CatBoost med en logistisk stacker – landet på det samme 0.882 OOF AUC.
         For å finne ut om 6 710 sesjoner faktisk er <em>nok</em>, holdt jeg ut det samme
         stratifiserte 710-rads tilfeldige utvalget som produksjonstreneren bruker som
@@ -420,7 +423,7 @@
         lavt-signal-mål. En enkelt LightGBM med 33 perseptuelle ekstra pluss 5
         mål-enkodede fargebucket-skårer utkonkurrerer alle andre arkitekturer på
         kjønn. Bucket-skårene er den store gevinsten: et 512-cellers RGB-gitter
-        der hver celle holder et gjennomsnittlig "jenteaktighet" / "gutteaktighet"-delta
+        der hver celle holder et gjennomsnittlig "femininitet" / "maskulinitet"-delta
         beregnet over treningsbrukere, slått opp trilineært per valg. Det signerte
         totalet av disse oppslagene blir den enkelt-feature med høyest gain i hele
         vektoren.

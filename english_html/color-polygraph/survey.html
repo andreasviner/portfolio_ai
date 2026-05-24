@@ -6,6 +6,9 @@
   <title>Test the model · Color Polygraph · Andreas Lindeman</title>
   <meta name="description" content="Pick colors through a 21-question elimination bracket. When you finish, the model tries to predict your gender, age, and current mood from nothing but your color choices." />
   <link rel="canonical" href="https://ai.andreaslindeman.com/color-polygraph/survey" />
+  <link rel="alternate" hreflang="en" href="https://ai.andreaslindeman.com/color-polygraph/survey" />
+  <link rel="alternate" hreflang="no" href="https://ai.andreaslindeman.no/color-polygraph/survey" />
+  <link rel="alternate" hreflang="x-default" href="https://ai.andreaslindeman.com/color-polygraph/survey" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Geist:wght@300..700&family=Geist+Mono:wght@300..600&display=swap" rel="stylesheet" />
@@ -76,7 +79,7 @@
       flex-direction: column;
       align-items: center;
       gap: 14px;
-      margin: 36px 0 28px;
+      margin: 36px 0 48px;
     }
     .sv-start-btn {
       font-family: var(--mono);
@@ -106,6 +109,71 @@
       text-transform: uppercase;
       color: var(--text-mute);
       margin: 0;
+    }
+    .sv-info {
+      margin: 56px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    .sv-info-intro {
+      font-family: var(--serif);
+      font-size: clamp(17px, 1.9vw, 21px);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.6;
+    }
+    .sv-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .sv-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sv-info-label {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 1.2;
+      color: var(--hobby);
+      margin: 0;
+      font-variation-settings: "opsz" 48;
+    }
+    .sv-info-desc {
+      font-family: var(--serif);
+      font-size: 16px;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.75;
+    }
+    .sv-info-outro {
+      font-family: var(--serif);
+      font-size: clamp(16px, 1.8vw, 19px);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.65;
+    }
+    .sv-info-link {
+      color: var(--hobby);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(245, 185, 92, 0.4);
+      transition: border-color .15s ease;
+    }
+    .sv-info-link:hover { border-bottom-color: var(--hobby); }
+    .sv-info-help {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(15px, 1.7vw, 18px);
+      color: var(--text-mute);
+      margin: 0;
+      line-height: 1.65;
     }
     .sv-overlay {
       position: absolute;
@@ -305,6 +373,26 @@
     <div class="sv-cta-wrap" id="svCtaWrap">
       <button type="button" class="sv-start-btn" id="svStartBtn">Start</button>
       <p class="sv-cta-sub">about two minutes &middot; picks sent to the model</p>
+    </div>
+
+    <div class="sv-info">
+      <p class="sv-info-intro">This is more than a favorite color test. After you complete the survey, your choices are sent to three different models that each predict something different about you.</p>
+      <ul class="sv-info-list">
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Color Gender Test</h3>
+          <p class="sv-info-desc">A model trained to detect gender from color preferences is the first to analyze your picks. The gender model is really accurate but not perfect, it has around a 90% success rate on the current data, but color preferences are constantly changing with time. You can even see a clear difference yourself when visualizing the data between men and women in the <a class="sv-info-link" href="https://andreaslindeman.com/projects/color-polygraph#explore-data">data explorer</a>.</p>
+        </li>
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Color Age Test</h3>
+          <p class="sv-info-desc">The same choices are passed to an age prediction model that estimates your age from the results. Age is much harder to read from colors alone than gender is. The model usually lands within about 6 years of your real age, which sounds rough at first but is actually closer than most people could guess a stranger from nothing but their favorite colors. There are still real trends in the data, younger and older people lean toward visibly different palettes, and you can browse those shifts yourself in the <a class="sv-info-link" href="https://andreaslindeman.com/projects/color-polygraph#explore-data">data explorer</a>.</p>
+        </li>
+        <li class="sv-info-item">
+          <h3 class="sv-info-label">AI Color Mood Test</h3>
+          <p class="sv-info-desc">Your color choices are lastly used in a third mood detection model to detect your current mood at the time you took the test. Mood is by far the hardest of the three to predict. People's reported moods are pretty subjective, and the link between favorite colors and mood is much weaker than for gender or age. On a scale of 0 (happy) to 60 (glum), the model usually lands around 9 points off, enough to be in the right ballpark but rarely spot on.</p>
+        </li>
+      </ul>
+      <p class="sv-info-outro">Want to know more about the models behind the predictions? The <a class="sv-info-link" href="/color-polygraph">AI architectures index</a> compares every version side by side, and the <a class="sv-info-link" href="https://andreaslindeman.com/projects/color-polygraph">main project page</a> covers the story and data behind it.</p>
+      <p class="sv-info-help">After the test you'll also be asked to correct the model if it guessed wrong. It would be a big help if you did :))</p>
     </div>
 
     <section class="project-section">
