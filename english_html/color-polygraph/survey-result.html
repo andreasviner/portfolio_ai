@@ -568,19 +568,28 @@
     }
 
     function buildPayload(savedState) {
-      const round1 = savedState.history[0];
-      const round2 = savedState.history[1];
-      const round3 = savedState.history[2];
+      // Bracket columns are consistent across both variants: offered = every
+      // colour shown in round 0, r1/r2(/r3) = the winners after each round, and
+      // final = the single winner of the last round.
+      //   short (3 rounds): offered(64) -> r1(16) -> r2(4) -> final
+      //   long  (4 rounds): offered(256) -> r1(64) -> r2(16) -> r3(4) -> final
+      const history = savedState.history;
       const offered = [];
-      round1.forEach(step => step.options.forEach(c => offered.push(c.rgb)));
-      return {
+      history[0].forEach(step => step.options.forEach(c => offered.push(c.rgb)));
+      const finalRound = history[history.length - 1];
+      const payload = {
         offered,
-        r1: round1.map(s => s.winner.rgb),
-        r2: round2.map(s => s.winner.rgb),
-        final: round3[0].winner.rgb,
+        r1: history[0].map(s => s.winner.rgb),
+        r2: history[1].map(s => s.winner.rgb),
+        final: finalRound[0].winner.rgb,
         valg: savedState.picks.map(p => String(p.position)).join(''),
         tider: savedState.picks.map(p => p.cumulativeMs),
       };
+      if (savedState.long) {
+        payload.r3 = history[2].map(s => s.winner.rgb);
+        payload.long = true;
+      }
+      return payload;
     }
 
     function buildMetadata(savedState) {
@@ -607,7 +616,8 @@
     }
 
     function showStatsSlide(opts) {
-      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId } = opts;
+      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId, long } = opts;
+      const pickCount = picks && picks.length ? picks.length : null;
       const tone = history ? paletteTone(history) : '—';
       const totalMs = picks && picks.length ? picks[picks.length - 1].cumulativeMs : 0;
       const totalS = Math.round(totalMs / 1000);
@@ -644,12 +654,13 @@
           '<a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">More about the project</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
-          window.location.href = 'survey';
+          window.location.href = long ? 'survey?long=1' : 'survey';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
+          const picksStr = pickCount ? pickCount + ' colour picks' : 'my colour picks';
           const shareData = {
             title: 'Color Polygraph',
-            text: 'My favourite color is ' + w.hex.toUpperCase() + '. The AI guessed ' + (score != null ? score + '/3 of' : 'my') + ' gender, age & mood from 21 colour picks.',
+            text: 'My favourite color is ' + w.hex.toUpperCase() + '. The AI guessed ' + (score != null ? score + '/3 of' : 'my') + ' gender, age & mood from ' + picksStr + '.',
             url: shareUrl,
           };
           const toast = s.querySelector('#rvToast');
@@ -698,11 +709,13 @@
         history: data.history || null,
         picks: data.picks || null,
         fromId: true,
+        long: !!data.long_survey,
       });
     }
 
     // ---- Full interactive reveal flow ----
     async function runRevealFlow(savedState) {
+      const isLong = !!savedState.long;
       const summary = { correct: 0 };
       const w = savedState.winner;
       document.documentElement.style.setProperty('--winner-color', w.hex);
@@ -733,13 +746,17 @@
         history.replaceState(null, '', newUrl);
       } catch (_e) {}
 
+      // The long survey has its own trained heads; everything below is identical
+      // to the short flow except the model name carries a "_long" suffix.
+      const M = (name) => isLong ? name + '_long' : name;
+
       // GENDER
       let predGenderLabel = null, confirmedGender = null;
       try {
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading gender model…</p></div>';
         });
-        const model = await loadModel('gender');
+        const model = await loadModel(M('gender'));
         const raw = TreeWalker.score(model, features.gender);
         const prob = TreeWalker.sigmoid(raw);
         predGenderLabel = prob >= 0.5 ? 'woman' : 'man';
@@ -776,7 +793,7 @@
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading age model…</p></div>';
         });
-        const model = await loadModel('age');
+        const model = await loadModel(M('age'));
         predAge = Math.max(6, Math.min(80, TreeWalker.score(model, features.age)));
         const rounded = Math.round(predAge);
 
@@ -816,7 +833,7 @@
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Loading mood model…</p></div>';
         });
-        const model = await loadModel('mood');
+        const model = await loadModel(M('mood'));
         predMood = Math.max(0, Math.min(60, TreeWalker.score(model, features.mood)));
         const rounded = Math.round(predMood);
 
