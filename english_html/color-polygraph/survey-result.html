@@ -809,7 +809,7 @@
               '<p class="rv-conf">years old — enter your actual age below</p>' +
               '<div class="rv-age-wrap">' +
                 '<input type="number" id="rvAgeInp" value="0">' +
-                '<span class="rv-hint">enter your real age — leave 0 to keep our guess</span>' +
+                '<span class="rv-hint">enter your real age</span>' +
               '</div>' +
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Confirm age</button>' +
@@ -817,13 +817,9 @@
             const inp = s.querySelector('#rvAgeInp');
             inp.focus();
             inp.select();
-            // Default is 0; committing 0 (or a blank/non-number) falls back to the
-            // predicted age. Any other number is saved verbatim — no clamping — so
-            // junk like -20 can be filtered out as a non-serious commit later.
-            const save = () => {
-              const raw = parseInt(inp.value, 10);
-              resolve(raw ? raw : rounded);
-            };
+            // Send the literal value, no clamp: a left-at-0 (or blank) commit saves
+            // 0 so pure click-throughs are filterable, and junk like -20 saves as-is.
+            const save = () => resolve(parseInt(inp.value, 10) || 0);
             s.querySelector('#rvAgeSave').addEventListener('click', save);
             inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
           });
@@ -885,6 +881,7 @@
         history: savedState.history,
         picks: savedState.picks,
         fromId: false,
+        long: isLong,
       });
     }
 
