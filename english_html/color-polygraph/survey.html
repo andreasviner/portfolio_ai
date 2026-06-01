@@ -104,9 +104,16 @@
     .sv-start-btn:active { transform: translateY(0); }
     .sv-btn-row {
       display: flex;
-      gap: 16px;
+      gap: 18px;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: flex-start;
+    }
+    .sv-btn-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
     }
     .sv-btn-time {
       display: block;
@@ -115,15 +122,12 @@
       letter-spacing: 0.18em;
       opacity: 0.78;
     }
-    .sv-start-btn.is-long {
-      background: transparent;
+    .sv-btn-note {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
       color: var(--hobby);
-      border: 1px solid rgba(245, 185, 92, 0.5);
-      box-shadow: none;
-    }
-    .sv-start-btn.is-long:hover {
-      background: rgba(245, 185, 92, 0.1);
-      box-shadow: 0 10px 26px rgba(245, 185, 92, 0.14);
     }
     .sv-cta-sub {
       font-family: var(--mono);
@@ -397,12 +401,17 @@
 
     <div class="sv-cta-wrap" id="svCtaWrap">
       <div class="sv-btn-row">
-        <button type="button" class="sv-start-btn" id="svStartBtn">
-          Start<span class="sv-btn-time">~40 sec</span>
-        </button>
-        <button type="button" class="sv-start-btn is-long" id="svStartLongBtn">
-          Long test<span class="sv-btn-time">~2 min</span>
-        </button>
+        <div class="sv-btn-col">
+          <button type="button" class="sv-start-btn" id="svStartBtn">
+            Fast survey<span class="sv-btn-time">~40 sec</span>
+          </button>
+        </div>
+        <div class="sv-btn-col">
+          <button type="button" class="sv-start-btn" id="svStartLongBtn">
+            Long survey<span class="sv-btn-time">~2 min</span>
+          </button>
+          <span class="sv-btn-note">highly accurate</span>
+        </div>
       </div>
       <p class="sv-cta-sub">picks sent to the model</p>
     </div>
@@ -722,6 +731,15 @@ function generatePalette(numColors = 64, poolSize) {
 
     startBtn.addEventListener('click', () => begin(false));
     startLongBtn.addEventListener('click', () => begin(true));
+
+    // ?type=long / ?type=short opens that survey directly, skipping the buttons.
+    (function () {
+      try {
+        const t = new URLSearchParams(window.location.search).get('type');
+        if (t === 'long') begin(true);
+        else if (t === 'short') begin(false);
+      } catch (_e) {}
+    })();
 
     overlayEl.addEventListener('click', () => {
       overlayEl.classList.add('is-hidden');

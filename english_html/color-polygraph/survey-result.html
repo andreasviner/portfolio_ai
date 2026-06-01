@@ -651,10 +651,13 @@
             '<button type="button" class="rv-share" id="rvShare">Share results</button>' +
             '<span class="rv-share-toast" id="rvToast" style="display:none">Link copied</span>' +
           '</div>' +
+          (long ? '' :
+            '<p style="font-family:var(--mono);font-size:11px;letter-spacing:0.03em;color:var(--text-mute);margin:20px 0 0;line-height:1.6">' +
+            'Want a sharper read? <a href="survey?type=long" style="color:var(--hobby);text-decoration:underline;text-underline-offset:3px">Take the long test</a> — it’s highly accurate.</p>') +
           '<a href="https://andreaslindeman.com/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">More about the project</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
-          window.location.href = long ? 'survey?long=1' : 'survey';
+          window.location.href = long ? 'survey?type=long' : 'survey?type=short';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
           const picksStr = pickCount ? pickCount + ' colour picks' : 'my colour picks';
@@ -805,15 +808,22 @@
               '<p class="rv-big">' + rounded + '</p>' +
               '<p class="rv-conf">years old — enter your actual age below</p>' +
               '<div class="rv-age-wrap">' +
-                '<input type="number" id="rvAgeInp" min="6" max="99" value="' + rounded + '">' +
-                '<span class="rv-hint">enter the same number if correct</span>' +
+                '<input type="number" id="rvAgeInp" value="0">' +
+                '<span class="rv-hint">enter your real age — leave 0 to keep our guess</span>' +
               '</div>' +
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Confirm age</button>' +
               '</div>';
             const inp = s.querySelector('#rvAgeInp');
             inp.focus();
-            const save = () => resolve(Math.max(6, Math.min(99, parseInt(inp.value, 10) || rounded)));
+            inp.select();
+            // Default is 0; committing 0 (or a blank/non-number) falls back to the
+            // predicted age. Any other number is saved verbatim — no clamping — so
+            // junk like -20 can be filtered out as a non-serious commit later.
+            const save = () => {
+              const raw = parseInt(inp.value, 10);
+              resolve(raw ? raw : rounded);
+            };
             s.querySelector('#rvAgeSave').addEventListener('click', save);
             inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
           });
