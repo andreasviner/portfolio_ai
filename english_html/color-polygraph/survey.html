@@ -102,6 +102,29 @@
       box-shadow: 0 14px 32px rgba(245, 185, 92, 0.28);
     }
     .sv-start-btn:active { transform: translateY(0); }
+    .sv-btn-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .sv-btn-time {
+      display: block;
+      margin-top: 7px;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      opacity: 0.78;
+    }
+    .sv-start-btn.is-long {
+      background: transparent;
+      color: var(--hobby);
+      border: 1px solid rgba(245, 185, 92, 0.5);
+      box-shadow: none;
+    }
+    .sv-start-btn.is-long:hover {
+      background: rgba(245, 185, 92, 0.1);
+      box-shadow: 0 10px 26px rgba(245, 185, 92, 0.14);
+    }
     .sv-cta-sub {
       font-family: var(--mono);
       font-size: 10px;
@@ -365,15 +388,23 @@
     <h1 class="project-title">Test the <em>model</em></h1>
 
     <p class="project-lede">
-      Pick your way through a 21-question color bracket — four swatches at a time,
-      twenty-one picks, one winner. When you finish, your choices are sent to a
-      machine learning model that tries to predict your gender, age, and current
-      mood from nothing but which colors you picked.
+      Pick your way through a color bracket — four swatches at a time, one winner.
+      The short test takes about 40 seconds; the long test runs four times as deep
+      for a sharper read. When you finish, your choices are sent to a machine
+      learning model that tries to predict your gender, age, and current mood from
+      nothing but which colors you picked.
     </p>
 
     <div class="sv-cta-wrap" id="svCtaWrap">
-      <button type="button" class="sv-start-btn" id="svStartBtn">Start</button>
-      <p class="sv-cta-sub">about two minutes &middot; picks sent to the model</p>
+      <div class="sv-btn-row">
+        <button type="button" class="sv-start-btn" id="svStartBtn">
+          Start<span class="sv-btn-time">~40 sec</span>
+        </button>
+        <button type="button" class="sv-start-btn is-long" id="svStartLongBtn">
+          Long test<span class="sv-btn-time">~2 min</span>
+        </button>
+      </div>
+      <p class="sv-cta-sub">picks sent to the model</p>
     </div>
 
     <div class="sv-info">
@@ -431,44 +462,35 @@
 
   <script>
   (function () {
-    // Long-survey variant: ?long=1 quadruples the starting palette (256 colors
-    // instead of 64), adding one extra elimination round. The bracket is a
-    // power-of-four funnel, so everything below derives from N_COLORS.
-    const IS_LONG = (function () {
-      try {
-        const p = new URLSearchParams(window.location.search);
-        return p.has('long') && p.get('long') !== '0' && p.get('long') !== 'false';
-      } catch (_e) { return false; }
-    })();
-    const N_COLORS = IS_LONG ? 256 : 64;
-    // Total questions in a power-of-four bracket = (N-1)/3  (64 -> 21, 256 -> 85).
-    // The ring/counter tops out one below that, matching the original 0..20 short flow.
-    const TOTAL_QUESTIONS = (N_COLORS - 1) / 3;
-    const COUNTER_MAX = TOTAL_QUESTIONS - 1;
+    // Two entry points: the standard 64-color survey and the long 256-color
+    // variant (one extra elimination round). The bracket is a power-of-four
+    // funnel, so every count below derives from N_COLORS, set when the user
+    // picks a mode via configure().
+    let IS_LONG = false;
+    let N_COLORS = 64;
+    let TOTAL_QUESTIONS = 21;
+    let COUNTER_MAX = 20;
 
-    const gridEl     = document.getElementById('svGrid');
-    const qNumEl     = document.getElementById('svQNum');
-    const ringFillEl = document.getElementById('svRingFill');
-    const RING_CIRC  = 2 * Math.PI * 34;
+    const gridEl       = document.getElementById('svGrid');
+    const qNumEl       = document.getElementById('svQNum');
+    const ringFillEl   = document.getElementById('svRingFill');
+    const RING_CIRC    = 2 * Math.PI * 34;
     ringFillEl.setAttribute('stroke-dasharray', RING_CIRC.toFixed(2));
-    const totalEl    = document.querySelector('.sv-progress-total');
-    if (totalEl) totalEl.textContent = String(COUNTER_MAX);
-    const stageEl    = document.getElementById('svStage');
-    const startBtn   = document.getElementById('svStartBtn');
-    const ctaWrap    = document.getElementById('svCtaWrap');
-    const overlayEl  = document.getElementById('svOverlay');
+    const totalEl      = document.querySelector('.sv-progress-total');
+    const stageEl      = document.getElementById('svStage');
+    const startBtn     = document.getElementById('svStartBtn');
+    const startLongBtn = document.getElementById('svStartLongBtn');
+    const ctaWrap      = document.getElementById('svCtaWrap');
+    const overlayEl    = document.getElementById('svOverlay');
 
-    // Swap the visible "21-question" copy for the long variant so the lede is honest.
-    if (IS_LONG) {
-      const lede = document.querySelector('.project-lede');
-      if (lede) {
-        lede.innerHTML =
-          'The long edition: pick your way through a ' + TOTAL_QUESTIONS + '-question color bracket — ' +
-          'four swatches at a time, starting from ' + N_COLORS + ' colors. When you finish, your favourite ' +
-          'colour and every pick along the way are saved to help train the model.';
-      }
-      const ctaSub = document.querySelector('.sv-cta-sub');
-      if (ctaSub) ctaSub.innerHTML = 'about eight minutes &middot; ' + TOTAL_QUESTIONS + ' picks';
+    function configure(isLong) {
+      IS_LONG = isLong;
+      N_COLORS = isLong ? 256 : 64;
+      // Total questions in a power-of-four bracket = (N-1)/3  (64 -> 21, 256 -> 85).
+      // The ring/counter tops out one below that, matching the original 0..20 short flow.
+      TOTAL_QUESTIONS = (N_COLORS - 1) / 3;
+      COUNTER_MAX = TOTAL_QUESTIONS - 1;
+      if (totalEl) totalEl.textContent = String(COUNTER_MAX);
     }
 
 function rgbToHex([r, g, b]) {
@@ -691,11 +713,15 @@ function generatePalette(numColors = 64, poolSize) {
       window.location.href = 'survey-result';
     }
 
-    startBtn.addEventListener('click', () => {
+    function begin(isLong) {
+      configure(isLong);
       ctaWrap.style.display = 'none';
       overlayEl.classList.remove('is-hidden');
       startSurvey();
-    });
+    }
+
+    startBtn.addEventListener('click', () => begin(false));
+    startLongBtn.addEventListener('click', () => begin(true));
 
     overlayEl.addEventListener('click', () => {
       overlayEl.classList.add('is-hidden');
