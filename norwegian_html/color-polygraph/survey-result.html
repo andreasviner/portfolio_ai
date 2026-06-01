@@ -402,12 +402,76 @@
       color: var(--hobby);
     }
 
+    /* color fingerprint */
+    .rv-fingerprint {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 0 0 14px;
+    }
+    .rv-fingerprint b {
+      color: var(--hobby);
+      font-weight: 500;
+    }
+
+    /* taste contrast (drawn to / passed over) */
+    .rv-taste {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      margin: 6px 0 26px;
+    }
+    .rv-taste-head {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .rv-taste-count {
+      color: var(--text-mute);
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+    }
+    .rv-taste-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+    .rv-taste-grid i {
+      display: block;
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+    .rv-taste-grid i.is-fav {
+      outline: 1.5px solid var(--hobby);
+      outline-offset: 1.5px;
+    }
+    .rv-taste-grid.is-rejected {
+      opacity: 0.5;
+    }
+    .rv-taste-grid.is-rejected i {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      filter: saturate(0.7);
+    }
+
     @media (max-width: 600px) {
       .rv-stats-layout { grid-template-columns: 1fr; }
       .rv-winner-swatch { max-width: 130px; }
       .rv-big { font-size: clamp(44px, 18vw, 80px); }
       .rv-slide { padding: 20px 20px; }
       .rv-dots { margin-bottom: 32px; }
+      .rv-taste { grid-template-columns: 1fr; gap: 18px; }
     }
   </style>
 </head>
@@ -567,20 +631,111 @@
       return avg < 50 || avg > 310 ? 'varm' : avg > 140 && avg < 270 ? 'kald' : 'blandet';
     }
 
-    function buildPayload(savedState) {
-      const round1 = savedState.history[0];
-      const round2 = savedState.history[1];
-      const round3 = savedState.history[2];
-      const offered = [];
-      round1.forEach(step => step.options.forEach(c => offered.push(c.rgb)));
+    // Deler hver farge surveyet viste i to: de brukeren stadig valgte (vinnere)
+    // og de som ble valgt bort (vist, men aldri plukket). Vekten til en farge
+    // vokser jo lenger den kom, slik at totalvinneren teller mest. Fungerer for
+    // begge lengder: history har samme struktur.
+    function collectTaste(history) {
+      const winnerHex = new Set();
+      const likedMap = new Map();   // hex -> { color, weight }
+      history.forEach((round, ri) => {
+        round.forEach(q => {
+          if (!q || !q.winner) return;
+          winnerHex.add(q.winner.hex);
+          const e = likedMap.get(q.winner.hex);
+          if (e) e.weight += ri + 1;
+          else likedMap.set(q.winner.hex, { color: q.winner, weight: ri + 1 });
+        });
+      });
+      const rejectedMap = new Map();
+      history.forEach(round => {
+        round.forEach(q => {
+          (q && q.options || []).forEach(o => {
+            if (!winnerHex.has(o.hex) && !rejectedMap.has(o.hex)) rejectedMap.set(o.hex, o);
+          });
+        });
+      });
+      const byHue = (a, b) => rgbToHsl((a.color || a).rgb)[0] - rgbToHsl((b.color || b).rgb)[0];
       return {
+        liked: [...likedMap.values()].sort(byHue),
+        rejected: [...rejectedMap.values()].sort(byHue),
+      };
+    }
+
+    // Vektet lesning av fargene brukeren ble tiltrukket av, på tre akser:
+    // temperatur, metning, lyshet. Returnerer nøkkelstrenger; kalleren oversetter
+    // dem til visningsord, slik at samme logikk kan brukes på begge språk.
+    function colorFingerprint(taste) {
+      const liked = taste.liked;
+      if (!liked.length) return null;
+      let wsum = 0, Lsum = 0, Ssum = 0, warm = 0, cool = 0;
+      liked.forEach(({ color, weight }) => {
+        const [h, s, l] = rgbToHsl(color.rgb);
+        wsum += weight; Lsum += l * weight; Ssum += s * weight;
+        if (h < 60 || h >= 300) warm += weight;
+        else if (h >= 150 && h < 270) cool += weight;
+      });
+      const L = Lsum / wsum, S = Ssum / wsum;
+      return {
+        temp: warm > cool * 1.2 ? 'warm' : cool > warm * 1.2 ? 'cool' : 'balanced',
+        sat: S >= 58 ? 'vivid' : S <= 28 ? 'muted' : 'soft',
+        light: L >= 62 ? 'bright' : L <= 38 ? 'dark' : 'medium',
+      };
+    }
+
+    function buildTasteSection(history, favHex) {
+      const t = collectTaste(history);
+      if (!t.liked.length && !t.rejected.length) return '';
+      const fav = (favHex || '').toLowerCase();
+      const likedCells = t.liked.map(({ color }) =>
+        '<i class="' + (color.hex.toLowerCase() === fav ? 'is-fav' : '') + '" style="background:' + color.hex + '"></i>'
+      ).join('');
+      const rejCells = t.rejected.map(c => '<i style="background:' + c.hex + '"></i>').join('');
+      return '<div class="rv-taste">' +
+        '<div class="rv-taste-col">' +
+          '<p class="rv-taste-head">Tiltrukket av <span class="rv-taste-count">' + t.liked.length + '</span></p>' +
+          '<div class="rv-taste-grid">' + likedCells + '</div>' +
+        '</div>' +
+        '<div class="rv-taste-col">' +
+          '<p class="rv-taste-head">Valgte bort <span class="rv-taste-count">' + t.rejected.length + '</span></p>' +
+          '<div class="rv-taste-grid is-rejected">' + rejCells + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function fingerprintPhrase(history) {
+      const fp = colorFingerprint(collectTaste(history));
+      if (!fp) return null;
+      const T = { warm: 'varm', cool: 'kjølig', balanced: 'balansert' };
+      const Sm = { vivid: 'sterk', soft: 'dempet', muted: 'matt' };
+      const Lm = { bright: 'lys', medium: 'medium', dark: 'mørk' };
+      const t = T[fp.temp];
+      return t.charAt(0).toUpperCase() + t.slice(1) + ', ' + Sm[fp.sat] + ', ' + Lm[fp.light];
+    }
+
+    function buildPayload(savedState) {
+      // Bracket columns are consistent across both variants: offered = every
+      // colour shown in round 0, r1/r2(/r3) = the winners after each round, and
+      // final = the single winner of the last round.
+      //   short (3 rounds): offered(64) -> r1(16) -> r2(4) -> final
+      //   long  (4 rounds): offered(256) -> r1(64) -> r2(16) -> r3(4) -> final
+      const history = savedState.history;
+      const offered = [];
+      history[0].forEach(step => step.options.forEach(c => offered.push(c.rgb)));
+      const finalRound = history[history.length - 1];
+      const payload = {
         offered,
-        r1: round1.map(s => s.winner.rgb),
-        r2: round2.map(s => s.winner.rgb),
-        final: round3[0].winner.rgb,
+        r1: history[0].map(s => s.winner.rgb),
+        r2: history[1].map(s => s.winner.rgb),
+        final: finalRound[0].winner.rgb,
         valg: savedState.picks.map(p => String(p.position)).join(''),
         tider: savedState.picks.map(p => p.cumulativeMs),
       };
+      if (savedState.long) {
+        payload.r3 = history[2].map(s => s.winner.rgb);
+        payload.long = true;
+      }
+      return payload;
     }
 
     function buildMetadata(savedState) {
@@ -607,18 +762,18 @@
     }
 
     function showStatsSlide(opts) {
-      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId } = opts;
-      const tone = history ? paletteTone(history) : '—';
+      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId, long } = opts;
+      const pickCount = picks && picks.length ? picks.length : null;
       const totalMs = picks && picks.length ? picks[picks.length - 1].cumulativeMs : 0;
       const totalS = Math.round(totalMs / 1000);
       const timeStr = totalS >= 60 ? Math.floor(totalS / 60) + 'm ' + (totalS % 60) + 's' : totalS > 0 ? totalS + 's' : '—';
       const shareUrl = window.location.origin + window.location.pathname + window.location.search;
+      const phrase = history ? fingerprintPhrase(history) : null;
 
       const pillsHtml = [
         confirmedGender ? '<span class="rv-pill">Kjønn <b>' + confirmedGender + '</b></span>' : '',
         confirmedAge != null ? '<span class="rv-pill">Alder <b>' + confirmedAge + '</b></span>' : '',
         confirmedMood != null ? '<span class="rv-pill">Humør <b>' + moodLabel(confirmedMood) + '</b></span>' : '',
-        tone !== '—' ? '<span class="rv-pill">Palett <b>' + tone + '</b></span>' : '',
         timeStr !== '—' ? '<span class="rv-pill">Tid <b>' + timeStr + '</b></span>' : '',
       ].join('');
 
@@ -631,25 +786,35 @@
               '<p class="rv-eyebrow">Din favorittfarge</p>' +
               '<p class="rv-winner-hex">' + w.hex.toUpperCase() + '</p>' +
               '<p class="rv-winner-rgb">rgb(' + w.rgb[0] + ', ' + w.rgb[1] + ', ' + w.rgb[2] + ')</p>' +
+              (phrase ? '<p class="rv-fingerprint">Paletten din er <b>' + phrase + '</b></p>' : '') +
               '<div class="rv-pills">' + pillsHtml + '</div>' +
               (history ? buildHueStrip(history) : '') +
             '</div>' +
           '</div>' +
+          (history ? buildTasteSection(history, w.hex) : '') +
           (score != null ? '<p class="rv-score">Modellen fikk <b>' + score + ' av 3</b> riktig.</p>' : '') +
           '<div class="rv-actions">' +
             '<button type="button" class="rv-retake" id="rvRetake">Ta surveyet på nytt</button>' +
             '<button type="button" class="rv-share" id="rvShare">Del resultater</button>' +
             '<span class="rv-share-toast" id="rvToast" style="display:none">Lenke kopiert</span>' +
           '</div>' +
+          (long ? '' :
+            '<p style="font-family:var(--mono);font-size:11px;letter-spacing:0.03em;color:var(--text-mute);margin:20px 0 0;line-height:1.6">' +
+            'Vil du ha et skarpere resultat? <a href="survey?type=long" style="color:var(--hobby);text-decoration:underline;text-underline-offset:3px">Ta den lange testen</a> — den er svært nøyaktig.</p>') +
           '<a href="https://andreaslindeman.no/projects/color-polygraph" class="project-back" style="display:inline-block;margin-top:18px">Mer om prosjektet</a>';
 
         s.querySelector('#rvRetake').addEventListener('click', () => {
-          window.location.href = 'survey';
+          window.location.href = long ? 'survey?type=long' : 'survey?type=short';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
+          const picksStr = pickCount ? pickCount + ' fargevalg' : 'fargevalg alene';
+          const tasteStr = phrase ? 'Fargesmaken min er ' + phrase.toLowerCase() + ', bygget rundt ' + w.hex.toUpperCase() + '.'
+                                  : 'Min favorittfarge er ' + w.hex.toUpperCase() + '.';
+          const guessStr = ' Color Polygraph-KI-en leste kjønn, alder og humør fra ' + picksStr +
+                           (score != null ? ' og fikk ' + score + '/3' : '') + '. Hva sier din?';
           const shareData = {
             title: 'Color Polygraph',
-            text: 'Min favorittfarge er ' + w.hex.toUpperCase() + '. KI-en gjettet ' + (score != null ? score + '/3 av' : 'mitt') + ' kjønn, alder og humør fra 21 fargevelg.',
+            text: tasteStr + guessStr,
             url: shareUrl,
           };
           const toast = s.querySelector('#rvToast');
@@ -698,11 +863,15 @@
         history: data.history || null,
         picks: data.picks || null,
         fromId: true,
+        long: !!data.long_survey,
       });
     }
 
     // ---- Full interactive reveal flow ----
     async function runRevealFlow(savedState) {
+      const isLong = !!savedState.long;
+      // The long survey has its own trained heads; model names carry "_long".
+      const M = (name) => isLong ? name + '_long' : name;
       const summary = { correct: 0 };
       const w = savedState.winner;
       document.documentElement.style.setProperty('--winner-color', w.hex);
@@ -739,7 +908,7 @@
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster kjønnsmodellen…</p></div>';
         });
-        const model = await loadModel('gender');
+        const model = await loadModel(M('gender'));
         const raw = TreeWalker.score(model, features.gender);
         const prob = TreeWalker.sigmoid(raw);
         predGenderLabel = prob >= 0.5 ? 'kvinne' : 'mann';
@@ -776,7 +945,7 @@
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster aldersmodellen…</p></div>';
         });
-        const model = await loadModel('age');
+        const model = await loadModel(M('age'));
         predAge = Math.max(6, Math.min(80, TreeWalker.score(model, features.age)));
         const rounded = Math.round(predAge);
 
@@ -788,15 +957,18 @@
               '<p class="rv-big">' + rounded + '</p>' +
               '<p class="rv-conf">år gammel — skriv inn din faktiske alder nedenfor</p>' +
               '<div class="rv-age-wrap">' +
-                '<input type="number" id="rvAgeInp" min="6" max="99" value="' + rounded + '">' +
-                '<span class="rv-hint">skriv inn det samme hvis det stemmer</span>' +
+                '<input type="number" id="rvAgeInp" value="0">' +
+                '<span class="rv-hint">skriv inn din ekte alder</span>' +
               '</div>' +
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvAgeSave">Bekreft alder</button>' +
               '</div>';
             const inp = s.querySelector('#rvAgeInp');
             inp.focus();
-            const save = () => resolve(Math.max(6, Math.min(99, parseInt(inp.value, 10) || rounded)));
+            inp.select();
+            // Send the literal value, no clamp: a left-at-0 (or blank) commit saves
+            // 0 so pure click-throughs are filterable, and junk like -20 saves as-is.
+            const save = () => resolve(parseInt(inp.value, 10) || 0);
             s.querySelector('#rvAgeSave').addEventListener('click', save);
             inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
           });
@@ -816,7 +988,7 @@
         goSlide(s => {
           s.innerHTML = '<div class="rv-center"><div class="rv-spinner"></div><p class="rv-loading-label">Laster humørmodellen…</p></div>';
         });
-        const model = await loadModel('mood');
+        const model = await loadModel(M('mood'));
         predMood = Math.max(0, Math.min(60, TreeWalker.score(model, features.mood)));
         const rounded = Math.round(predMood);
 
@@ -858,6 +1030,7 @@
         history: savedState.history,
         picks: savedState.picks,
         fromId: false,
+        long: isLong,
       });
     }
 

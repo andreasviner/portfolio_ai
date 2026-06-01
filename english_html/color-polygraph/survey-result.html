@@ -351,6 +351,71 @@
       color: var(--text-dim);
       margin: 0 0 24px;
     }
+
+    /* colour-taste fingerprint line */
+    .rv-fingerprint {
+      font-family: var(--serif);
+      font-size: clamp(17px, 2.6vw, 23px);
+      line-height: 1.45;
+      color: var(--text);
+      margin: 4px 0 26px;
+      max-width: 640px;
+    }
+    .rv-fingerprint b {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--hobby);
+    }
+
+    /* drawn-to / passed-over mosaics */
+    .rv-taste {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      margin-bottom: 28px;
+    }
+    .rv-taste-col { min-width: 0; }
+    .rv-taste-label {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .rv-taste-label span {
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
+      font-size: 8.5px;
+    }
+    .rv-mosaic {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      align-content: flex-start;
+    }
+    .rv-chip {
+      border-radius: 2px;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .2s ease;
+      cursor: default;
+    }
+    .rv-mosaic.is-liked .rv-chip { width: 20px; height: 20px; }
+    .rv-mosaic.is-rejected .rv-chip { width: 12px; height: 12px; opacity: 0.5; }
+    .rv-chip:hover {
+      transform: scale(1.45);
+      opacity: 1;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      position: relative;
+      z-index: 3;
+    }
+    .rv-chip.is-fav {
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--hobby);
+      opacity: 1;
+    }
+
     .rv-score {
       font-family: var(--mono);
       font-size: 10px;
@@ -402,12 +467,76 @@
       color: var(--hobby);
     }
 
+    /* color fingerprint */
+    .rv-fingerprint {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 0 0 14px;
+    }
+    .rv-fingerprint b {
+      color: var(--hobby);
+      font-weight: 500;
+    }
+
+    /* taste contrast (drawn to / passed over) */
+    .rv-taste {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      margin: 6px 0 26px;
+    }
+    .rv-taste-head {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .rv-taste-count {
+      color: var(--text-mute);
+      font-size: 8.5px;
+      letter-spacing: 0.1em;
+    }
+    .rv-taste-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+    .rv-taste-grid i {
+      display: block;
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+    .rv-taste-grid i.is-fav {
+      outline: 1.5px solid var(--hobby);
+      outline-offset: 1.5px;
+    }
+    .rv-taste-grid.is-rejected {
+      opacity: 0.5;
+    }
+    .rv-taste-grid.is-rejected i {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      filter: saturate(0.7);
+    }
+
     @media (max-width: 600px) {
       .rv-stats-layout { grid-template-columns: 1fr; }
       .rv-winner-swatch { max-width: 130px; }
       .rv-big { font-size: clamp(44px, 18vw, 80px); }
       .rv-slide { padding: 20px 20px; }
       .rv-dots { margin-bottom: 32px; }
+      .rv-taste { grid-template-columns: 1fr; gap: 18px; }
     }
   </style>
 </head>
@@ -567,6 +696,85 @@
       return avg < 50 || avg > 310 ? 'warm' : avg > 140 && avg < 270 ? 'cool' : 'mixed';
     }
 
+    // Split every colour the survey ever showed into the ones the user kept
+    // choosing (winners) and the ones they passed over (shown but never picked).
+    // A colour's "weight" grows the further it advanced, so the overall winner
+    // counts the most. Works for both lengths: history shape is identical.
+    function collectTaste(history) {
+      const winnerHex = new Set();
+      const likedMap = new Map();   // hex -> { color, weight }
+      history.forEach((round, ri) => {
+        round.forEach(q => {
+          if (!q || !q.winner) return;
+          winnerHex.add(q.winner.hex);
+          const e = likedMap.get(q.winner.hex);
+          if (e) e.weight += ri + 1;
+          else likedMap.set(q.winner.hex, { color: q.winner, weight: ri + 1 });
+        });
+      });
+      const rejectedMap = new Map();
+      history.forEach(round => {
+        round.forEach(q => {
+          (q && q.options || []).forEach(o => {
+            if (!winnerHex.has(o.hex) && !rejectedMap.has(o.hex)) rejectedMap.set(o.hex, o);
+          });
+        });
+      });
+      const byHue = (a, b) => rgbToHsl((a.color || a).rgb)[0] - rgbToHsl((b.color || b).rgb)[0];
+      return {
+        liked: [...likedMap.values()].sort(byHue),
+        rejected: [...rejectedMap.values()].sort(byHue),
+      };
+    }
+
+    // A weighted read of the colours the user was drawn to, on three axes:
+    // temperature, saturation, lightness. Returns key strings; the caller maps
+    // them to display words so the same logic serves both languages.
+    function colorFingerprint(taste) {
+      const liked = taste.liked;
+      if (!liked.length) return null;
+      let wsum = 0, Lsum = 0, Ssum = 0, warm = 0, cool = 0;
+      liked.forEach(({ color, weight }) => {
+        const [h, s, l] = rgbToHsl(color.rgb);
+        wsum += weight; Lsum += l * weight; Ssum += s * weight;
+        if (h < 60 || h >= 300) warm += weight;
+        else if (h >= 150 && h < 270) cool += weight;
+      });
+      const L = Lsum / wsum, S = Ssum / wsum;
+      return {
+        temp: warm > cool * 1.2 ? 'warm' : cool > warm * 1.2 ? 'cool' : 'balanced',
+        sat: S >= 58 ? 'vivid' : S <= 28 ? 'muted' : 'soft',
+        light: L >= 62 ? 'bright' : L <= 38 ? 'dark' : 'medium',
+      };
+    }
+
+    function buildTasteSection(history, favHex) {
+      const t = collectTaste(history);
+      if (!t.liked.length && !t.rejected.length) return '';
+      const fav = (favHex || '').toLowerCase();
+      const likedCells = t.liked.map(({ color }) =>
+        '<i class="' + (color.hex.toLowerCase() === fav ? 'is-fav' : '') + '" style="background:' + color.hex + '"></i>'
+      ).join('');
+      const rejCells = t.rejected.map(c => '<i style="background:' + c.hex + '"></i>').join('');
+      return '<div class="rv-taste">' +
+        '<div class="rv-taste-col">' +
+          '<p class="rv-taste-head">Drawn to <span class="rv-taste-count">' + t.liked.length + '</span></p>' +
+          '<div class="rv-taste-grid">' + likedCells + '</div>' +
+        '</div>' +
+        '<div class="rv-taste-col">' +
+          '<p class="rv-taste-head">Passed over <span class="rv-taste-count">' + t.rejected.length + '</span></p>' +
+          '<div class="rv-taste-grid is-rejected">' + rejCells + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function fingerprintPhrase(history) {
+      const fp = colorFingerprint(collectTaste(history));
+      if (!fp) return null;
+      const sat = fp.sat, light = fp.light;
+      return fp.temp.charAt(0).toUpperCase() + fp.temp.slice(1) + ', ' + sat + ', ' + light;
+    }
+
     function buildPayload(savedState) {
       // Bracket columns are consistent across both variants: offered = every
       // colour shown in round 0, r1/r2(/r3) = the winners after each round, and
@@ -618,17 +826,16 @@
     function showStatsSlide(opts) {
       const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId, long } = opts;
       const pickCount = picks && picks.length ? picks.length : null;
-      const tone = history ? paletteTone(history) : '—';
       const totalMs = picks && picks.length ? picks[picks.length - 1].cumulativeMs : 0;
       const totalS = Math.round(totalMs / 1000);
       const timeStr = totalS >= 60 ? Math.floor(totalS / 60) + 'm ' + (totalS % 60) + 's' : totalS > 0 ? totalS + 's' : '—';
       const shareUrl = window.location.origin + window.location.pathname + window.location.search;
+      const phrase = history ? fingerprintPhrase(history) : null;
 
       const pillsHtml = [
         confirmedGender ? '<span class="rv-pill">Gender <b>' + confirmedGender + '</b></span>' : '',
         confirmedAge != null ? '<span class="rv-pill">Age <b>' + confirmedAge + '</b></span>' : '',
         confirmedMood != null ? '<span class="rv-pill">Mood <b>' + moodLabel(confirmedMood) + '</b></span>' : '',
-        tone !== '—' ? '<span class="rv-pill">Palette <b>' + tone + '</b></span>' : '',
         timeStr !== '—' ? '<span class="rv-pill">Time <b>' + timeStr + '</b></span>' : '',
       ].join('');
 
@@ -641,10 +848,12 @@
               '<p class="rv-eyebrow">Your favourite color</p>' +
               '<p class="rv-winner-hex">' + w.hex.toUpperCase() + '</p>' +
               '<p class="rv-winner-rgb">rgb(' + w.rgb[0] + ', ' + w.rgb[1] + ', ' + w.rgb[2] + ')</p>' +
+              (phrase ? '<p class="rv-fingerprint">Your palette reads <b>' + phrase + '</b></p>' : '') +
               '<div class="rv-pills">' + pillsHtml + '</div>' +
               (history ? buildHueStrip(history) : '') +
             '</div>' +
           '</div>' +
+          (history ? buildTasteSection(history, w.hex) : '') +
           (score != null ? '<p class="rv-score">The model got <b>' + score + ' of 3</b> correct.</p>' : '') +
           '<div class="rv-actions">' +
             '<button type="button" class="rv-retake" id="rvRetake">Retake survey</button>' +
@@ -660,10 +869,14 @@
           window.location.href = long ? 'survey?type=long' : 'survey?type=short';
         });
         s.querySelector('#rvShare').addEventListener('click', () => {
-          const picksStr = pickCount ? pickCount + ' colour picks' : 'my colour picks';
+          const picksStr = pickCount ? pickCount + ' colour picks' : 'colour picks alone';
+          const tasteStr = phrase ? 'My colour taste is ' + phrase.toLowerCase() + ', built around ' + w.hex.toUpperCase() + '.'
+                                  : 'My favourite color is ' + w.hex.toUpperCase() + '.';
+          const guessStr = ' The Color Polygraph AI read my gender, age & mood from ' + picksStr +
+                           (score != null ? ' and got ' + score + '/3' : '') + '. What does yours say?';
           const shareData = {
             title: 'Color Polygraph',
-            text: 'My favourite color is ' + w.hex.toUpperCase() + '. The AI guessed ' + (score != null ? score + '/3 of' : 'my') + ' gender, age & mood from ' + picksStr + '.',
+            text: tasteStr + guessStr,
             url: shareUrl,
           };
           const toast = s.querySelector('#rvToast');
