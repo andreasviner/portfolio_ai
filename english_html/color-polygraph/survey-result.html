@@ -744,7 +744,7 @@
   <script src="./models-js/tree_walker.js?v=2"></script>
   <script src="./models-js/taste_features.js?v=2"></script>
   <script src="./models-js/pick_features.js?v=2"></script>
-  <script src="./models-js/pick_cube.js?v=5"></script>
+  <script src="./models-js/pick_cube.js?v=6"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -1141,12 +1141,11 @@
           const cmpButtons = [cmpOff, cmpMan, cmpWoman, cmpGo];
           const cmpMeta = s.querySelector('#rvCmpMeta');
           let popPromise = null;
-          const cmpIdCache = Object.create(null);  // id -> {counts, favHex}
+          const cmpIdCache = Object.create(null);  // id -> counts
           let cmpToken = 0;     // latest-wins: stale async results are dropped
           let cmpCounts = null; // active comparison target
           let cmpWho = '';
           let cmpKind = 'diff';
-          let cmpExtra = null;  // {favHex} when comparing against an id
 
           const setStatus = (msg, isError) => {
             cmpStatus.style.display = msg ? '' : 'none';
@@ -1161,16 +1160,17 @@
               return;
             }
             const st = PickCube.compareStats(_cubeController.counts, cmpCounts);
-            let html =
+            cmpMeta.innerHTML =
               '<span>Likeness <b>' + st.percent + '%</b></span>' +
-              '<span>Both love' + swatch(st.sharedHex) + '</span>' +
-              '<span>Biggest clash' + swatch(st.clashHex) + ' ' + (st.clashYou ? '(you)' : '(them)') + '</span>';
-            if (cmpExtra && cmpExtra.favHex) {
-              html += '<span>Their favourite' + swatch(cmpExtra.favHex) + '</span>';
-            }
-            cmpMeta.innerHTML = html;
+              '<span>Both like' + swatch(st.bothLikeHex) + '</span>' +
+              '<span>Both hate' + swatch(st.bothHateHex) + '</span>' +
+              '<span>You like, they hate' + swatch(st.youLikeHex) + '</span>' +
+              '<span>They like, you hate' + swatch(st.theyLikeHex) + '</span>';
             cmpMeta.style.display = '';
           };
+          // Keep the stats live while either side's simulation is still
+          // filling in (compareStats is two 512-loops -- effectively free).
+          setInterval(() => { if (cmpCounts) refreshMeta(); }, 600);
           const refreshCompare = () => {
             if (_cubeController) _cubeController.setCompare(cmpCounts, cmpKind);
             legend.textContent = !cmpCounts ? ''
@@ -1181,10 +1181,9 @@
             cmpSame.classList.toggle('is-active', cmpKind === 'same');
             refreshMeta();
           };
-          const applyCompare = (counts, who, btn, extra) => {
+          const applyCompare = (counts, who, btn) => {
             cmpCounts = counts;
             cmpWho = who;
-            cmpExtra = extra || null;
             cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
             refreshCompare();
           };
@@ -1229,7 +1228,7 @@
             const whoLabel = 'id ' + otherId.slice(0, 8) + '…';
             try {
               const cached = cmpIdCache[otherId];
-              if (cached) { applyCompare(cached.counts, whoLabel, cmpGo, { favHex: cached.favHex }); setStatus(''); return; }
+              if (cached) { applyCompare(cached, whoLabel, cmpGo); setStatus(''); return; }
               setStatus('fetching survey…');
               const d = await getJson('/survey/' + encodeURIComponent(otherId));
               if (tok !== cmpToken) return;
@@ -1247,10 +1246,10 @@
               });
               if (tok !== cmpToken) return;
               // Render immediately; their counts keep filling in live.
-              applyCompare(sim.counts, whoLabel, cmpGo, { favHex: d.winner_hex });
+              applyCompare(sim.counts, whoLabel, cmpGo);
               sim.done.then(() => {
-                cmpIdCache[otherId] = { counts: sim.counts, favHex: d.winner_hex };  // cache only completed runs
-                if (tok === cmpToken) { setStatus(''); refreshMeta(); }
+                cmpIdCache[otherId] = sim.counts;  // cache only completed runs
+                if (tok === cmpToken) setStatus('');
               });
             } catch (err) {
               console.warn('compare id failed', err);

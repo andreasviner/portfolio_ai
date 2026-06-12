@@ -248,37 +248,50 @@
   // stretched onto a friendly 0-100 scale calibrated from measurements at the
   // 200k default: same person re-simulated ~0.92 -> ~98%, random strangers
   // ~0.40 -> ~45%, vs the population aggregates ~0.46 -> ~52%.
+  // Cheap (two 512-loops), safe to call repeatedly while the counts are still
+  // filling in -- the page refreshes these live during simulation.
   function compareStats(countsA, countsB) {
-    function profile(c) {
+    function profile(c, invert) {
       var m = new Float64Array(N_VOXELS), sum = 0, n = 0;
       var w = WEIGHTS;
       for (var v = 0; v < N_VOXELS; v++) {
         var o = c.off[v];
         if (o <= 0) continue;
-        var s = (w.w1 * c.r1[v] + w.w2 * c.r2[v] + w.wF * c.fn[v] - w.wRej * (o - c.r1[v])) / o;
+        var s = invert
+          ? (o - c.r1[v]) / o
+          : (w.w1 * c.r1[v] + w.w2 * c.r2[v] + w.wF * c.fn[v] - w.wRej * (o - c.r1[v])) / o;
         m[v] = s; sum += s; n++;
       }
       var mean = n ? (sum / n) || 1 : 1;
       for (var k = 0; k < N_VOXELS; k++) m[k] /= mean;
       return m;
     }
-    var a = profile(countsA), b = profile(countsB);
-    var sMin = 0, sMax = 0, sharedVid = 0, sharedBest = -1, clashVid = 0, clashBest = -1;
+    var a = profile(countsA, false), b = profile(countsB, false);
+    var ra = profile(countsA, true), rb = profile(countsB, true);
+    var sMin = 0, sMax = 0;
+    var bothLikeVid = 0, bothLikeBest = -Infinity;
+    var bothHateVid = 0, bothHateBest = -Infinity;
+    var youLikeVid = 0, youLikeBest = -Infinity;   // you like it, they don't
+    var theyLikeVid = 0, theyLikeBest = -Infinity; // they like it, you don't
     for (var v = 0; v < N_VOXELS; v++) {
-      var lo = Math.min(a[v], b[v]), hi = Math.max(a[v], b[v]);
-      sMin += lo; sMax += hi;
-      if (lo > sharedBest) { sharedBest = lo; sharedVid = v; }
-      var d = Math.abs(a[v] - b[v]);
-      if (d > clashBest) { clashBest = d; clashVid = v; }
+      var lo = Math.min(a[v], b[v]);
+      sMin += lo; sMax += Math.max(a[v], b[v]);
+      if (lo > bothLikeBest) { bothLikeBest = lo; bothLikeVid = v; }
+      var loHate = Math.min(ra[v], rb[v]);
+      if (loHate > bothHateBest) { bothHateBest = loHate; bothHateVid = v; }
+      var d = a[v] - b[v];
+      if (d > youLikeBest) { youLikeBest = d; youLikeVid = v; }
+      if (-d > theyLikeBest) { theyLikeBest = -d; theyLikeVid = v; }
     }
     var jaccard = sMax > 0 ? sMin / sMax : 0;
     var percent = Math.max(0, Math.min(100, Math.round(101 * jaccard + 5)));
     return {
       jaccard: jaccard,
       percent: percent,
-      sharedVid: sharedVid, sharedHex: voxelHex(sharedVid),
-      clashVid: clashVid, clashHex: voxelHex(clashVid),
-      clashYou: a[clashVid] >= b[clashVid],  // true: you like it more than them
+      bothLikeVid: bothLikeVid, bothLikeHex: voxelHex(bothLikeVid),
+      bothHateVid: bothHateVid, bothHateHex: voxelHex(bothHateVid),
+      youLikeVid: youLikeVid, youLikeHex: voxelHex(youLikeVid),
+      theyLikeVid: theyLikeVid, theyLikeHex: voxelHex(theyLikeVid),
     };
   }
 
@@ -489,7 +502,7 @@
     var total = opts.totalAnswers || TOTAL_ANSWERS;
     // Sanity line for tweaking via URL/console: confirms which build + config
     // is actually running (a cached old script won't print this shape).
-    console.info('[PickCube v5]', 'answers=' + total,
+    console.info('[PickCube v6]', 'answers=' + total,
       'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var stopped = false;
     var origStop = controller.stop;
