@@ -18,7 +18,9 @@
   // How many questions the AI answers. Single source of truth -- the result
   // page reads this; override per-visit with ?answers=NNNN.
   var TOTAL_ANSWERS = 200000;
-  var ANSWERS_PER_BRACKET = 21;                // 16 + 4 + 1, same as a short survey
+  // Each question eliminates 3 colours, so a full bracket is (n-1)/3 answers:
+  // short (64) -> 21, long (256) -> 85.
+  function answersPerBracket(numColors) { return (numColors - 1) / 3; }
   // Display weights (project-page defaults). Overridable from the URL for
   // testing: ?w1=0.5&w2=0.5&wf=0.5&wrej=0
   var WEIGHTS = { w1: 0.5, w2: 0.5, wF: 0.5, wRej: 0 };
@@ -142,13 +144,18 @@
     return round[qs + 3];
   }
 
-  // One synthetic short survey, answered by the model. Mutates counts.
-  function runBracket(score, counts) {
-    var palette = generatePalette(64);
+  // One synthetic survey (64 colours short, 256 long), answered by the model.
+  // Mutates counts. Tallies map onto the population cube's 4 stages:
+  // round 0 -> off + r1, round 1 -> r2, the final question -> fn. The long
+  // survey's extra middle round (16 -> 4) gets no extra tier of its own --
+  // the counts structure (and the display weights) only know 4 stages.
+  function runBracket(score, counts, numColors) {
+    var palette = generatePalette(numColors || 64);
     var round = palette;
-    var stage = 0;  // 0 -> tally off+r1, 1 -> tally r2, 2 -> tally final
+    var stage = 0;
     while (round.length > 1) {
       var winners = [];
+      var isFinalQuestion = round.length === 4;
       for (var qs = 0; qs < round.length; qs += 4) {
         var best = answerQuestion(round, qs, score);
         if (stage === 0) {
@@ -156,7 +163,7 @@
           counts.r1[voxelId(best)] += 1;
         } else if (stage === 1) {
           counts.r2[voxelId(best)] += 1;
-        } else {
+        } else if (isFinalQuestion) {
           counts.fn[voxelId(best)] += 1;
         }
         winners.push(best);
@@ -466,14 +473,16 @@
     return makeScorer(model, person, ctx);
   }
 
-  // Answer brackets in setTimeout-sized chunks (one bracket ~10-15ms) so the
-  // page and render loop stay responsive while the counts fill in.
-  function runChunked(score, counts, total, onProgress, onDone, isStopped) {
+  // Answer brackets in setTimeout-sized chunks (one bracket ~10-15ms short,
+  // ~40-80ms long) so the page and render loop stay responsive while the
+  // counts fill in.
+  function runChunked(score, counts, total, numColors, onProgress, onDone, isStopped) {
+    var perBracket = answersPerBracket(numColors);
     var answered = 0;
     function tick() {
       if (isStopped && isStopped()) return;
-      runBracket(score, counts);
-      answered += ANSWERS_PER_BRACKET;
+      runBracket(score, counts, numColors);
+      answered += perBracket;
       if (onProgress) onProgress(Math.min(answered, total), total);
       if (answered < total) setTimeout(tick, 0);
       else if (onDone) onDone();
@@ -487,7 +496,8 @@
   // opts: {
   //   history:      survey history (rounds of {winner:{rgb}})
   //   features:     worker feature response {gender, age, mood}
-  //   modelUrl:     URL of pick_trees.json
+  //   modelUrl:     URL of pick_trees.json / pick_long_trees.json
+  //   long:         true -> simulate 256-colour long brackets
   //   totalAnswers: how many questions the AI answers (default TOTAL_ANSWERS)
   //   onProgress:   function(answered, total)
   //   onDone:       function()
@@ -500,16 +510,17 @@
     var controller = mountRenderer(canvas, counts);
 
     var total = opts.totalAnswers || TOTAL_ANSWERS;
+    var numColors = opts.long ? 256 : 64;
     // Sanity line for tweaking via URL/console: confirms which build + config
     // is actually running (a cached old script won't print this shape).
-    console.info('[PickCube v6]', 'answers=' + total,
+    console.info('[PickCube v7]', 'answers=' + total, 'colors=' + numColors,
       'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var stopped = false;
     var origStop = controller.stop;
     controller.stop = function () { stopped = true; origStop(); };
     controller.counts = counts;  // exposed for debugging / tests
 
-    runChunked(score, counts, total, opts.onProgress, opts.onDone,
+    runChunked(score, counts, total, numColors, opts.onProgress, opts.onDone,
                function () { return stopped; });
     return controller;
   }
@@ -524,8 +535,9 @@
     var score = await buildScorer(opts);
     var counts = emptyCounts();
     var total = opts.totalAnswers || TOTAL_ANSWERS;
+    var numColors = opts.long ? 256 : 64;
     var done = new Promise(function (resolve) {
-      runChunked(score, counts, total, opts.onProgress,
+      runChunked(score, counts, total, numColors, opts.onProgress,
                  function () { resolve(counts); }, opts.isStopped);
     });
     return { counts: counts, done: done };
