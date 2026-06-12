@@ -478,7 +478,7 @@
        Styling mirrors the project page's population cube: radial-gradient
        stage, hairline card, RGB axis chips overlaid on the canvas. */
     .rv-cube-embed {
-      max-width: 640px;
+      max-width: 780px;
       margin: 10px auto 34px;
       padding: 18px 18px 16px;
       background: var(--surface);
@@ -617,6 +617,36 @@
       flex-basis: 100%;
     }
     .rv-cmp-status.is-error { color: #d97b6a; }
+    /* likeness / fun facts row, shown while comparing */
+    .rv-cmp-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--hairline);
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+    }
+    .rv-cmp-meta b {
+      color: var(--hobby);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    .rv-cmp-meta i {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      vertical-align: -2px;
+      margin-left: 5px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
     .rv-cube-progress {
       display: flex;
       align-items: center;
@@ -714,7 +744,7 @@
   <script src="./models-js/tree_walker.js?v=2"></script>
   <script src="./models-js/taste_features.js?v=2"></script>
   <script src="./models-js/pick_features.js?v=2"></script>
-  <script src="./models-js/pick_cube.js?v=4"></script>
+  <script src="./models-js/pick_cube.js?v=5"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -1035,6 +1065,7 @@
                 '</span>' +
                 '<span class="rv-cmp-status" id="rvCmpStatus" style="display:none"></span>' +
               '</div>' +
+              '<div class="rv-cmp-meta" id="rvCmpMeta" style="display:none"></div>' +
             '</div>'
           : '') +
           (history ? buildTasteSection(history, w.hex) : '') +
@@ -1063,6 +1094,7 @@
           const rej = s.querySelector('#rvCubeRej');
 
           if (_cubeController) { _cubeController.stop(); _cubeController = null; }
+          let refreshMeta = () => {};  // assigned by the compare block below
           PickCube.mount(s.querySelector('#rvCubeCanvas'), {
             history,
             features,
@@ -1072,7 +1104,7 @@
               fill.style.width = (answered / total * 100).toFixed(1) + '%';
               label.textContent = answered.toLocaleString() + ' / ' + total.toLocaleString();
             },
-            onDone: () => { progress.style.display = 'none'; },
+            onDone: () => { progress.style.display = 'none'; refreshMeta(); },
           }).then(controller => {
             _cubeController = controller;
           }).catch(err => {
@@ -1107,17 +1139,37 @@
           const cmpDiff = s.querySelector('#rvCmpDiff');
           const cmpSame = s.querySelector('#rvCmpSame');
           const cmpButtons = [cmpOff, cmpMan, cmpWoman, cmpGo];
+          const cmpMeta = s.querySelector('#rvCmpMeta');
           let popPromise = null;
-          const cmpIdCache = Object.create(null);
+          const cmpIdCache = Object.create(null);  // id -> {counts, favHex}
           let cmpToken = 0;     // latest-wins: stale async results are dropped
           let cmpCounts = null; // active comparison target
           let cmpWho = '';
           let cmpKind = 'diff';
+          let cmpExtra = null;  // {favHex} when comparing against an id
 
           const setStatus = (msg, isError) => {
             cmpStatus.style.display = msg ? '' : 'none';
             cmpStatus.textContent = msg || '';
             cmpStatus.classList.toggle('is-error', !!isError);
+          };
+          const swatch = (hex) => '<i style="background:' + hex + '" title="' + hex + '"></i>';
+          refreshMeta = () => {
+            if (!cmpCounts || !_cubeController || !_cubeController.counts) {
+              cmpMeta.style.display = 'none';
+              cmpMeta.innerHTML = '';
+              return;
+            }
+            const st = PickCube.compareStats(_cubeController.counts, cmpCounts);
+            let html =
+              '<span>Likeness <b>' + st.percent + '%</b></span>' +
+              '<span>Both love' + swatch(st.sharedHex) + '</span>' +
+              '<span>Biggest clash' + swatch(st.clashHex) + ' ' + (st.clashYou ? '(you)' : '(them)') + '</span>';
+            if (cmpExtra && cmpExtra.favHex) {
+              html += '<span>Their favourite' + swatch(cmpExtra.favHex) + '</span>';
+            }
+            cmpMeta.innerHTML = html;
+            cmpMeta.style.display = '';
           };
           const refreshCompare = () => {
             if (_cubeController) _cubeController.setCompare(cmpCounts, cmpKind);
@@ -1127,10 +1179,12 @@
             cmpKindWrap.style.display = cmpCounts ? '' : 'none';
             cmpDiff.classList.toggle('is-active', cmpKind === 'diff');
             cmpSame.classList.toggle('is-active', cmpKind === 'same');
+            refreshMeta();
           };
-          const applyCompare = (counts, who, btn) => {
+          const applyCompare = (counts, who, btn, extra) => {
             cmpCounts = counts;
             cmpWho = who;
+            cmpExtra = extra || null;
             cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
             refreshCompare();
           };
@@ -1175,7 +1229,7 @@
             const whoLabel = 'id ' + otherId.slice(0, 8) + '…';
             try {
               const cached = cmpIdCache[otherId];
-              if (cached) { applyCompare(cached, whoLabel, cmpGo); setStatus(''); return; }
+              if (cached) { applyCompare(cached.counts, whoLabel, cmpGo, { favHex: cached.favHex }); setStatus(''); return; }
               setStatus('fetching survey…');
               const d = await getJson('/survey/' + encodeURIComponent(otherId));
               if (tok !== cmpToken) return;
@@ -1193,10 +1247,10 @@
               });
               if (tok !== cmpToken) return;
               // Render immediately; their counts keep filling in live.
-              applyCompare(sim.counts, whoLabel, cmpGo);
+              applyCompare(sim.counts, whoLabel, cmpGo, { favHex: d.winner_hex });
               sim.done.then(() => {
-                if (tok === cmpToken) setStatus('');
-                cmpIdCache[otherId] = sim.counts;  // cache only completed runs
+                cmpIdCache[otherId] = { counts: sim.counts, favHex: d.winner_hex };  // cache only completed runs
+                if (tok === cmpToken) { setStatus(''); refreshMeta(); }
               });
             } catch (err) {
               console.warn('compare id failed', err);
@@ -1205,6 +1259,13 @@
           };
           cmpGo.addEventListener('click', compareId);
           cmpInput.addEventListener('keydown', e => { if (e.key === 'Enter') compareId(); });
+
+          // ?id2=<survey id> starts the cube in difference mode against that
+          // survey right away (shareable comparison link).
+          try {
+            const id2 = new URLSearchParams(window.location.search).get('id2');
+            if (id2) { cmpInput.value = id2; compareId(); }
+          } catch (_e) {}
         }
         s.querySelector('#rvShare').addEventListener('click', () => {
           const picksStr = pickCount ? pickCount + ' colour picks' : 'colour picks alone';

@@ -36,6 +36,16 @@
     } catch (_e) {}
   })();
 
+  // Diff-mode denoising, in mean-profile units. Two near-identical surveys
+  // differ only by Monte-Carlo noise (measured: typical |d| ~0.2, maxAbs
+  // ~0.5-0.7 at the 200k default); real differences measure 2.5-2.9.
+  //  * DIFF_NOISE_FLOOR soft-thresholds every diff toward zero by the noise
+  //    scale, so sameness genuinely dies instead of being renormalised up.
+  //  * MIN_DIFF_SCALE stops the display from normalising tiny residuals back
+  //    to full size.
+  var DIFF_NOISE_FLOOR = 0.5;
+  var MIN_DIFF_SCALE = 2.0;
+
   // The model answers PROBABILISTICALLY, like the humans it learned from: each
   // candidate's sigmoid output is its pick-probability, and the answer is
   // sampled from those (an argmax answer would make the single favourite win
@@ -195,7 +205,10 @@
     var out = new Map();
     for (var vid = 0; vid < N_VOXELS; vid++) {
       var d = (sa.get(vid) || 0) / ma - (sb.get(vid) || 0) / mb;
-      if (d !== 0) out.set(vid, d);
+      // soft-threshold: shrink toward zero by the Monte-Carlo noise scale
+      var mag = Math.abs(d) - DIFF_NOISE_FLOOR;
+      if (mag <= 0) continue;
+      out.set(vid, d > 0 ? mag : -mag);
     }
     return out;
   }
@@ -218,6 +231,55 @@
       if (m > 0) out.set(vid, m);
     }
     return out;
+  }
+
+  function voxelCenter(vid) {
+    var rr = (vid >>> 6) & 7, gg = (vid >>> 3) & 7, bb = vid & 7;
+    return [rr * 32 + 16, gg * 32 + 16, bb * 32 + 16];
+  }
+
+  function voxelHex(vid) {
+    var c = voxelCenter(vid);
+    return '#' + ((1 << 24) | (c[0] << 16) | (c[1] << 8) | c[2]).toString(16).slice(1);
+  }
+
+  // Likeness + fun facts for a comparison. The score is the Jaccard overlap of
+  // the two mean-normalised love profiles (sum of mins / sum of maxes),
+  // stretched onto a friendly 0-100 scale calibrated from measurements at the
+  // 200k default: same person re-simulated ~0.92 -> ~98%, random strangers
+  // ~0.40 -> ~45%, vs the population aggregates ~0.46 -> ~52%.
+  function compareStats(countsA, countsB) {
+    function profile(c) {
+      var m = new Float64Array(N_VOXELS), sum = 0, n = 0;
+      var w = WEIGHTS;
+      for (var v = 0; v < N_VOXELS; v++) {
+        var o = c.off[v];
+        if (o <= 0) continue;
+        var s = (w.w1 * c.r1[v] + w.w2 * c.r2[v] + w.wF * c.fn[v] - w.wRej * (o - c.r1[v])) / o;
+        m[v] = s; sum += s; n++;
+      }
+      var mean = n ? (sum / n) || 1 : 1;
+      for (var k = 0; k < N_VOXELS; k++) m[k] /= mean;
+      return m;
+    }
+    var a = profile(countsA), b = profile(countsB);
+    var sMin = 0, sMax = 0, sharedVid = 0, sharedBest = -1, clashVid = 0, clashBest = -1;
+    for (var v = 0; v < N_VOXELS; v++) {
+      var lo = Math.min(a[v], b[v]), hi = Math.max(a[v], b[v]);
+      sMin += lo; sMax += hi;
+      if (lo > sharedBest) { sharedBest = lo; sharedVid = v; }
+      var d = Math.abs(a[v] - b[v]);
+      if (d > clashBest) { clashBest = d; clashVid = v; }
+    }
+    var jaccard = sMax > 0 ? sMin / sMax : 0;
+    var percent = Math.max(0, Math.min(100, Math.round(101 * jaccard + 5)));
+    return {
+      jaccard: jaccard,
+      percent: percent,
+      sharedVid: sharedVid, sharedHex: voxelHex(sharedVid),
+      clashVid: clashVid, clashHex: voxelHex(clashVid),
+      clashYou: a[clashVid] >= b[clashVid],  // true: you like it more than them
+    };
   }
 
   // Population aggregates (project-page summary.json `buckets.*.v`:
@@ -304,6 +366,8 @@
         if (a > maxAbs) maxAbs = a;
       });
       if (maxAbs === 0) maxAbs = 1;
+      // In diff mode, never normalise up pure noise: equal tastes -> empty cube.
+      if (signed && maxAbs < MIN_DIFF_SCALE) maxAbs = MIN_DIFF_SCALE;
 
       var points = [];
       scores.forEach(function (score, vid) {
@@ -425,7 +489,7 @@
     var total = opts.totalAnswers || TOTAL_ANSWERS;
     // Sanity line for tweaking via URL/console: confirms which build + config
     // is actually running (a cached old script won't print this shape).
-    console.info('[PickCube v4]', 'answers=' + total,
+    console.info('[PickCube v5]', 'answers=' + total,
       'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var stopped = false;
     var origStop = controller.stop;
@@ -460,6 +524,8 @@
     mount: mount,
     simulateCounts: simulateCounts,
     countsFromPopulation: countsFromPopulation,
+    compareStats: compareStats,
+    voxelHex: voxelHex,
     TOTAL_ANSWERS: TOTAL_ANSWERS,
     GRID: GRID,
     WEIGHTS: WEIGHTS,
