@@ -665,13 +665,14 @@
     const MODEL_CACHE = Object.create(null);
 
     // How many fresh survey questions the pick model answers for the colour
-    // cube. Tweak here, or override per-visit with ?answers=NNNN for testing.
+    // cube. Defined once in pick_cube.js (TOTAL_ANSWERS); override per-visit
+    // with ?answers=NNNN. Display weights too: ?w1=&w2=&wf=&wrej=.
     const CUBE_ANSWERS = (function () {
       try {
         const v = parseInt(new URLSearchParams(window.location.search).get('answers'), 10);
         if (v > 0) return v;
       } catch (_e) {}
-      return 20000;
+      return PickCube.TOTAL_ANSWERS;
     })();
 
     function loadModel(name) {

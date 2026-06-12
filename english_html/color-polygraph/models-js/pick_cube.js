@@ -15,9 +15,26 @@
 
   var GRID = 8;
   var N_VOXELS = GRID * GRID * GRID;          // 512
-  var TOTAL_ANSWERS = 5000;                    // AI-answered questions; tweak freely
+  // How many questions the AI answers. Single source of truth -- the result
+  // page reads this; override per-visit with ?answers=NNNN.
+  var TOTAL_ANSWERS = 20000;
   var ANSWERS_PER_BRACKET = 21;                // 16 + 4 + 1, same as a short survey
-  var WEIGHTS = { w1: 0.5, w2: 0.5, wF: 0.5, wRej: 0 };  // project-page defaults
+  // Display weights (project-page defaults). Overridable from the URL for
+  // testing: ?w1=0.5&w2=0.5&wf=0.5&wrej=0
+  var WEIGHTS = { w1: 0.5, w2: 0.5, wF: 0.5, wRej: 0 };
+  (function () {
+    try {
+      var p = new URLSearchParams(global.location.search);
+      var f = function (key, cur) {
+        var v = parseFloat(p.get(key));
+        return isNaN(v) ? cur : v;
+      };
+      WEIGHTS.w1 = f('w1', WEIGHTS.w1);
+      WEIGHTS.w2 = f('w2', WEIGHTS.w2);
+      WEIGHTS.wF = f('wf', WEIGHTS.wF);
+      WEIGHTS.wRej = f('wrej', WEIGHTS.wRej);
+    } catch (_e) {}
+  })();
 
   // The model answers PROBABILISTICALLY, like the humans it learned from: each
   // candidate's sigmoid output is its pick-probability, and the answer is
@@ -316,5 +333,7 @@
     return controller;
   }
 
-  global.PickCube = { mount: mount, TOTAL_ANSWERS: TOTAL_ANSWERS, GRID: GRID };
+  // WEIGHTS is live: changing it (URL params above, or PickCube.WEIGHTS.w1 = x
+  // in the console) re-shapes the cube on the next rendered frame.
+  global.PickCube = { mount: mount, TOTAL_ANSWERS: TOTAL_ANSWERS, GRID: GRID, WEIGHTS: WEIGHTS };
 })(typeof window !== 'undefined' ? window : globalThis);
