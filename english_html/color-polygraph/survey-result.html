@@ -367,55 +367,6 @@
       color: var(--hobby);
     }
 
-    /* drawn-to / passed-over mosaics */
-    .rv-taste {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 26px;
-      margin-bottom: 28px;
-    }
-    .rv-taste-col { min-width: 0; }
-    .rv-taste-label {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text-mute);
-      margin: 0 0 10px;
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-    .rv-taste-label span {
-      color: var(--text-dim);
-      letter-spacing: 0.12em;
-      font-size: 8.5px;
-    }
-    .rv-mosaic {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      align-content: flex-start;
-    }
-    .rv-chip {
-      border-radius: 2px;
-      transition: transform .12s ease, box-shadow .12s ease, opacity .2s ease;
-      cursor: default;
-    }
-    .rv-mosaic.is-liked .rv-chip { width: 20px; height: 20px; }
-    .rv-mosaic.is-rejected .rv-chip { width: 12px; height: 12px; opacity: 0.5; }
-    .rv-chip:hover {
-      transform: scale(1.45);
-      opacity: 1;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-      position: relative;
-      z-index: 3;
-    }
-    .rv-chip.is-fav {
-      box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--hobby);
-      opacity: 1;
-    }
-
     .rv-score {
       font-family: var(--mono);
       font-size: 10px;
@@ -467,27 +418,15 @@
       color: var(--hobby);
     }
 
-    /* color fingerprint */
-    .rv-fingerprint {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-mute);
-      margin: 0 0 14px;
-    }
-    .rv-fingerprint b {
-      color: var(--hobby);
-      font-weight: 500;
-    }
-
     /* taste contrast (drawn to / passed over) */
     .rv-taste {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 26px;
-      margin: 6px 0 26px;
+      margin: 6px 0 30px;
+      max-width: 640px;
     }
+    .rv-taste-col { min-width: 0; }
     .rv-taste-head {
       font-family: var(--mono);
       font-size: 9px;
@@ -537,8 +476,31 @@
 
     /* ---- personal colour cube (embedded in the stats slide) ---- */
     .rv-cube-embed {
-      max-width: 520px;
-      margin: 4px 0 28px;
+      max-width: 560px;
+      margin: 6px 0 30px;
+      padding: 16px 16px 14px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+    }
+    .rv-cube-eyebrow {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .rv-cube-legend {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: none;
+      color: var(--text-mute);
     }
     .rv-cube-canvas-wrap {
       position: relative;
@@ -553,6 +515,71 @@
       cursor: grab;
     }
     .rv-cube-canvas-wrap canvas:active { cursor: grabbing; }
+    /* compare row */
+    .rv-cube-compare {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--hairline);
+    }
+    .rv-cube-compare-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-right: 2px;
+    }
+    .rv-cmp-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px solid var(--hairline);
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .rv-cmp-btn:hover { color: var(--text); border-color: var(--hairline-2); }
+    .rv-cmp-btn.is-active {
+      background: rgba(245, 185, 92, 0.12);
+      color: var(--hobby);
+      border-color: rgba(245, 185, 92, 0.4);
+    }
+    .rv-cmp-id-wrap {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .rv-cmp-id-wrap input {
+      font-family: var(--mono);
+      font-size: 10px;
+      width: 150px;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--hairline);
+      border-radius: 2px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .rv-cmp-id-wrap input:focus {
+      outline: none;
+      border-color: rgba(245, 185, 92, 0.5);
+    }
+    .rv-cmp-status {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      flex-basis: 100%;
+    }
+    .rv-cmp-status.is-error { color: #d97b6a; }
     .rv-cube-progress {
       display: flex;
       align-items: center;
@@ -650,7 +677,7 @@
   <script src="./models-js/tree_walker.js?v=2"></script>
   <script src="./models-js/taste_features.js?v=2"></script>
   <script src="./models-js/pick_features.js?v=2"></script>
-  <script src="./models-js/pick_cube.js?v=2"></script>
+  <script src="./models-js/pick_cube.js?v=3"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -941,6 +968,7 @@
           '</div>' +
           (canCube ?
             '<div class="rv-cube-embed">' +
+              '<p class="rv-cube-eyebrow">Colour cube<span class="rv-cube-legend" id="rvCubeLegend"></span></p>' +
               '<div class="rv-cube-canvas-wrap"><canvas id="rvCubeCanvas"></canvas></div>' +
               '<div class="rv-cube-progress" id="rvCubeProgress">' +
                 '<div class="rv-cube-progress-track"><div class="rv-cube-progress-fill" id="rvCubeFill"></div></div>' +
@@ -951,6 +979,17 @@
                   '<button type="button" class="rv-btn is-yes" id="rvCubeLiked" aria-pressed="true">Drawn to</button>' +
                   '<button type="button" class="rv-btn is-no" id="rvCubeRej" aria-pressed="false">Passed over</button>' +
                 '</div>' +
+              '</div>' +
+              '<div class="rv-cube-compare">' +
+                '<span class="rv-cube-compare-label">Compare</span>' +
+                '<button type="button" class="rv-cmp-btn is-active" id="rvCmpOff">Just me</button>' +
+                '<button type="button" class="rv-cmp-btn" id="rvCmpMan">Typical man</button>' +
+                '<button type="button" class="rv-cmp-btn" id="rvCmpWoman">Typical woman</button>' +
+                '<span class="rv-cmp-id-wrap">' +
+                  '<input type="text" id="rvCmpId" placeholder="survey id…" spellcheck="false">' +
+                  '<button type="button" class="rv-cmp-btn" id="rvCmpGo">Go</button>' +
+                '</span>' +
+                '<span class="rv-cmp-status" id="rvCmpStatus" style="display:none"></span>' +
               '</div>' +
             '</div>'
           : '') +
@@ -1006,6 +1045,99 @@
           };
           liked.addEventListener('click', () => setMode(false));
           rej.addEventListener('click', () => setMode(true));
+
+          // -- compare: vs typical man / typical woman (population data from
+          //    the project page) or vs another survey id (simulated with the
+          //    same model). Rendered as the project page's diff mode:
+          //    triangle = this survey likes it more, circle = the other side.
+          const POP_URL = 'https://andreaslindeman.com/projects_data/2020-color-polygraph/summary.json';
+          const legend = s.querySelector('#rvCubeLegend');
+          const cmpStatus = s.querySelector('#rvCmpStatus');
+          const cmpOff = s.querySelector('#rvCmpOff');
+          const cmpMan = s.querySelector('#rvCmpMan');
+          const cmpWoman = s.querySelector('#rvCmpWoman');
+          const cmpGo = s.querySelector('#rvCmpGo');
+          const cmpInput = s.querySelector('#rvCmpId');
+          const cmpButtons = [cmpOff, cmpMan, cmpWoman, cmpGo];
+          let popPromise = null;
+          const cmpIdCache = Object.create(null);
+          let cmpToken = 0;  // latest-wins: stale async results are dropped
+
+          const setStatus = (msg, isError) => {
+            cmpStatus.style.display = msg ? '' : 'none';
+            cmpStatus.textContent = msg || '';
+            cmpStatus.classList.toggle('is-error', !!isError);
+          };
+          const applyCompare = (counts, who, btn) => {
+            if (_cubeController) _cubeController.setCompare(counts);
+            legend.textContent = counts ? ('▲ you · ● ' + who) : '';
+            cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+          };
+          const loadPop = () => {
+            if (!popPromise) {
+              popPromise = fetch(POP_URL).then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+              }).catch(err => { popPromise = null; throw err; });
+            }
+            return popPromise;
+          };
+          const compareGender = async (key, who, btn) => {
+            const tok = ++cmpToken;
+            setStatus('loading population data…');
+            try {
+              const pop = await loadPop();
+              if (tok !== cmpToken) return;
+              applyCompare(PickCube.countsFromPopulation(pop.buckets[key].v), who, btn);
+              setStatus('');
+            } catch (err) {
+              console.warn('population data failed', err);
+              if (tok === cmpToken) setStatus('could not load population data', true);
+            }
+          };
+
+          cmpOff.addEventListener('click', () => {
+            cmpToken++;
+            setStatus('');
+            applyCompare(null, '', cmpOff);
+          });
+          cmpMan.addEventListener('click', () => compareGender('g_all', 'typical man', cmpMan));
+          cmpWoman.addEventListener('click', () => compareGender('j_all', 'typical woman', cmpWoman));
+
+          const compareId = async () => {
+            const otherId = cmpInput.value.trim();
+            if (!otherId) { cmpInput.focus(); return; }
+            const tok = ++cmpToken;
+            try {
+              let counts = cmpIdCache[otherId];
+              if (!counts) {
+                setStatus('fetching survey…');
+                const d = await getJson('/survey/' + encodeURIComponent(otherId));
+                if (tok !== cmpToken) return;
+                if (d.long_survey) { setStatus('long surveys are not supported yet', true); return; }
+                if (!d.features || !d.history) { setStatus('that survey has no model data', true); return; }
+                counts = await PickCube.simulateCounts({
+                  history: d.history,
+                  features: d.features,
+                  modelUrl: MODELS_BASE + 'pick_trees.json?v=2',
+                  totalAnswers: CUBE_ANSWERS,
+                  onProgress: (a, t) => {
+                    if (tok === cmpToken) setStatus('simulating their survey… ' + a.toLocaleString() + ' / ' + t.toLocaleString());
+                  },
+                  isStopped: () => tok !== cmpToken,
+                });
+                if (tok !== cmpToken) return;
+                cmpIdCache[otherId] = counts;
+              }
+              applyCompare(counts, 'id ' + otherId.slice(0, 8) + '…', cmpGo);
+              setStatus('');
+            } catch (err) {
+              console.warn('compare id failed', err);
+              if (tok === cmpToken) setStatus('could not load that survey id', true);
+            }
+          };
+          cmpGo.addEventListener('click', compareId);
+          cmpInput.addEventListener('keydown', e => { if (e.key === 'Enter') compareId(); });
         }
         s.querySelector('#rvShare').addEventListener('click', () => {
           const picksStr = pickCount ? pickCount + ' colour picks' : 'colour picks alone';
