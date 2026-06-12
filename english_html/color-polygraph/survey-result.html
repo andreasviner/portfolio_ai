@@ -645,10 +645,12 @@
 
   <div class="rv-wrap" id="rvWrap"></div>
 
-  <script src="./models-js/tree_walker.js"></script>
-  <script src="./models-js/taste_features.js"></script>
-  <script src="./models-js/pick_features.js"></script>
-  <script src="./models-js/pick_cube.js"></script>
+  <!-- ?v= cache-busts: bump when a models-js file changes, or the browser
+       keeps serving the old script (stale cube logic / wrong feature count). -->
+  <script src="./models-js/tree_walker.js?v=2"></script>
+  <script src="./models-js/taste_features.js?v=2"></script>
+  <script src="./models-js/pick_features.js?v=2"></script>
+  <script src="./models-js/pick_cube.js?v=2"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -981,7 +983,7 @@
           PickCube.mount(s.querySelector('#rvCubeCanvas'), {
             history,
             features,
-            modelUrl: MODELS_BASE + 'pick_trees.json',
+            modelUrl: MODELS_BASE + 'pick_trees.json?v=2',  // bump on retrain (force-cached)
             totalAnswers: CUBE_ANSWERS,
             onProgress: (answered, total) => {
               fill.style.width = (answered / total * 100).toFixed(1) + '%';

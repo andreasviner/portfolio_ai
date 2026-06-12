@@ -311,6 +311,10 @@
     var controller = mountRenderer(canvas, counts);
 
     var total = opts.totalAnswers || TOTAL_ANSWERS;
+    // Sanity line for tweaking via URL/console: confirms which build + config
+    // is actually running (a cached old script won't print this shape).
+    console.info('[PickCube v2]', 'answers=' + total,
+      'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var answered = 0;
     var stopped = false;
     var origStop = controller.stop;
