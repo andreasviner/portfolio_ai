@@ -17,7 +17,7 @@
   var N_VOXELS = GRID * GRID * GRID;          // 512
   // How many questions the AI answers. Single source of truth -- the result
   // page reads this; override per-visit with ?answers=NNNN.
-  var TOTAL_ANSWERS = 20000;
+  var TOTAL_ANSWERS = 200000;
   var ANSWERS_PER_BRACKET = 21;                // 16 + 4 + 1, same as a short survey
   // Display weights (project-page defaults). Overridable from the URL for
   // testing: ?w1=0.5&w2=0.5&wf=0.5&wrej=0
@@ -200,6 +200,26 @@
     return out;
   }
 
+  // "In common": what BOTH sides like (or, inverted, both reject) -- the
+  // project page's "both" mode, which takes the min of the two scores. Sides
+  // are mean-normalised like diffScores so individual-vs-population works.
+  function sameScores(countsA, countsB, invert) {
+    var sa = voxelScores(countsA, invert);
+    var sb = voxelScores(countsB, invert);
+    function meanOf(s) {
+      var sum = 0, n = 0;
+      s.forEach(function (v) { sum += v; n++; });
+      return (n && sum / n) || 1;
+    }
+    var ma = meanOf(sa), mb = meanOf(sb);
+    var out = new Map();
+    for (var vid = 0; vid < N_VOXELS; vid++) {
+      var m = Math.min((sa.get(vid) || 0) / ma, (sb.get(vid) || 0) / mb);
+      if (m > 0) out.set(vid, m);
+    }
+    return out;
+  }
+
   // Population aggregates (project-page summary.json `buckets.*.v`:
   // voxelId -> [off, r1, r2, fn]) as a counts object.
   function countsFromPopulation(vMap) {
@@ -223,7 +243,8 @@
     var ctx2d = canvas.getContext('2d');
     var yaw = 0.6, pitch = -0.45, autoRotate = true, dragging = false, lastX = 0, lastY = 0;
     var inverted = false;
-    var compareCounts = null;  // when set, render the signed diff (us - them)
+    var compareCounts = null;  // when set, render against the other side
+    var compareKind = 'diff';  // 'diff' (signed) | 'same' (what both agree on)
     var raf = null;
 
     function rotateVec(x, y, z) {
@@ -269,11 +290,13 @@
         ctx2d.strokeStyle = ax.color; ctx2d.beginPath(); ctx2d.moveTo(pa[0], pa[1]); ctx2d.lineTo(pb[0], pb[1]); ctx2d.stroke();
       });
 
-      // Compare mode renders the signed diff with the project page's "diff"
-      // semantics: triangle = this survey likes it more, circle = the other.
-      var signed = !!compareCounts;
-      var scores = signed ? diffScores(counts, compareCounts, inverted)
-                          : voxelScores(counts, inverted);
+      // Compare modes: 'diff' renders the signed difference (circle = this
+      // survey likes it more, triangle = the other side does), 'same' renders
+      // what both agree on (project page's "both" mode, plain dots).
+      var signed = !!compareCounts && compareKind === 'diff';
+      var scores = !compareCounts ? voxelScores(counts, inverted)
+        : compareKind === 'same' ? sameScores(counts, compareCounts, inverted)
+        : diffScores(counts, compareCounts, inverted);
       var step = 2 / GRID, maxAbs = 0;
       scores.forEach(function (v) {
         if (!signed && v <= 0) return;
@@ -304,7 +327,8 @@
         var alpha = Math.min(0.98, 0.55 + shaped * 0.45);
         ctx2d.beginPath();
         ctx2d.fillStyle = 'rgba(' + pt.cr + ',' + pt.cg + ',' + pt.cb + ',' + alpha + ')';
-        if (signed && norm > 0) {
+        if (signed && norm < 0) {
+          // triangle = the OTHER side likes it more; circle = this survey
           var r = radius * 1.5551;
           ctx2d.moveTo(pt.x, pt.y - r);
           ctx2d.lineTo(pt.x + r * 0.866, pt.y + r * 0.5);
@@ -335,7 +359,12 @@
 
     return {
       setInverted: function (v) { inverted = !!v; },
-      setCompare: function (otherCounts) { compareCounts = otherCounts || null; },
+      // kind: 'diff' (default) | 'same'. counts may still be filling in -- the
+      // render loop reads them live every frame.
+      setCompare: function (otherCounts, kind) {
+        compareCounts = otherCounts || null;
+        compareKind = kind === 'same' ? 'same' : 'diff';
+      },
       stop: function () { if (raf) global.cancelAnimationFrame(raf); global.removeEventListener('resize', resize); },
     };
   }
@@ -396,7 +425,7 @@
     var total = opts.totalAnswers || TOTAL_ANSWERS;
     // Sanity line for tweaking via URL/console: confirms which build + config
     // is actually running (a cached old script won't print this shape).
-    console.info('[PickCube v3]', 'answers=' + total,
+    console.info('[PickCube v4]', 'answers=' + total,
       'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var stopped = false;
     var origStop = controller.stop;
@@ -409,16 +438,20 @@
   }
 
   // simulateCounts(opts): run the same simulation for ANOTHER survey (no
-  // canvas) and resolve its counts -- used by the compare-with-id feature.
-  // Same opts as mount minus the canvas; opts.isStopped() aborts silently.
+  // canvas). Resolves {counts, done} as soon as the scorer is ready: `counts`
+  // fills in live (hand it to setCompare immediately so the comparison renders
+  // while it simulates, same as the main cube), `done` resolves on completion.
+  // Same opts as mount minus the canvas; opts.isStopped() aborts silently
+  // (`done` then never resolves -- guard with your own staleness token).
   async function simulateCounts(opts) {
     var score = await buildScorer(opts);
     var counts = emptyCounts();
     var total = opts.totalAnswers || TOTAL_ANSWERS;
-    return new Promise(function (resolve) {
+    var done = new Promise(function (resolve) {
       runChunked(score, counts, total, opts.onProgress,
                  function () { resolve(counts); }, opts.isStopped);
     });
+    return { counts: counts, done: done };
   }
 
   // WEIGHTS is live: changing it (URL params above, or PickCube.WEIGHTS.w1 = x

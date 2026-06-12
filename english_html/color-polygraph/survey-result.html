@@ -474,11 +474,13 @@
        overflowing flex column clips the top above the scroll origin. */
     .rv-slide.rv-stats-slide { justify-content: flex-start; }
 
-    /* ---- personal colour cube (embedded in the stats slide) ---- */
+    /* ---- personal colour cube (embedded in the stats slide) ----
+       Styling mirrors the project page's population cube: radial-gradient
+       stage, hairline card, RGB axis chips overlaid on the canvas. */
     .rv-cube-embed {
-      max-width: 560px;
-      margin: 6px 0 30px;
-      padding: 16px 16px 14px;
+      max-width: 640px;
+      margin: 10px auto 34px;
+      padding: 18px 18px 16px;
       background: var(--surface);
       border: 1px solid var(--hairline);
       border-radius: 6px;
@@ -489,7 +491,7 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text-dim);
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       display: flex;
       justify-content: space-between;
       align-items: baseline;
@@ -505,16 +507,43 @@
     .rv-cube-canvas-wrap {
       position: relative;
       width: 100%;
-      aspect-ratio: 1;
-      max-height: 440px;
+      aspect-ratio: 4 / 3;
+      background: radial-gradient(circle at 50% 45%, #131829 0%, #060810 80%);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
     }
     .rv-cube-canvas-wrap canvas {
+      display: block;
       width: 100%;
       height: 100%;
       touch-action: none;
       cursor: grab;
     }
     .rv-cube-canvas-wrap canvas:active { cursor: grabbing; }
+    .rv-cube-axes {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      display: flex;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-mute);
+      pointer-events: none;
+    }
+    .rv-cube-axes span::before {
+      content: '';
+      display: inline-block;
+      width: 7px; height: 7px;
+      margin-right: 5px;
+      vertical-align: 1px;
+      border-radius: 50%;
+    }
+    .rv-cube-axes .ax-r::before { background: #ff6464; }
+    .rv-cube-axes .ax-g::before { background: #66dd6e; }
+    .rv-cube-axes .ax-b::before { background: #6aa6ff; }
     /* compare row */
     .rv-cube-compare {
       display: flex;
@@ -571,6 +600,14 @@
     .rv-cmp-id-wrap input:focus {
       outline: none;
       border-color: rgba(245, 185, 92, 0.5);
+    }
+    .rv-cmp-kind {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-left: auto;
+      padding-left: 10px;
+      border-left: 1px solid var(--hairline);
     }
     .rv-cmp-status {
       font-family: var(--mono);
@@ -677,7 +714,7 @@
   <script src="./models-js/tree_walker.js?v=2"></script>
   <script src="./models-js/taste_features.js?v=2"></script>
   <script src="./models-js/pick_features.js?v=2"></script>
-  <script src="./models-js/pick_cube.js?v=3"></script>
+  <script src="./models-js/pick_cube.js?v=4"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -969,7 +1006,10 @@
           (canCube ?
             '<div class="rv-cube-embed">' +
               '<p class="rv-cube-eyebrow">Colour cube<span class="rv-cube-legend" id="rvCubeLegend"></span></p>' +
-              '<div class="rv-cube-canvas-wrap"><canvas id="rvCubeCanvas"></canvas></div>' +
+              '<div class="rv-cube-canvas-wrap">' +
+                '<canvas id="rvCubeCanvas"></canvas>' +
+                '<div class="rv-cube-axes"><span class="ax-r">R</span><span class="ax-g">G</span><span class="ax-b">B</span></div>' +
+              '</div>' +
               '<div class="rv-cube-progress" id="rvCubeProgress">' +
                 '<div class="rv-cube-progress-track"><div class="rv-cube-progress-fill" id="rvCubeFill"></div></div>' +
                 '<span class="rv-cube-progress-label" id="rvCubeLabel">loading model…</span>' +
@@ -988,6 +1028,10 @@
                 '<span class="rv-cmp-id-wrap">' +
                   '<input type="text" id="rvCmpId" placeholder="survey id…" spellcheck="false">' +
                   '<button type="button" class="rv-cmp-btn" id="rvCmpGo">Go</button>' +
+                '</span>' +
+                '<span class="rv-cmp-kind" id="rvCmpKind" style="display:none">' +
+                  '<button type="button" class="rv-cmp-btn is-active" id="rvCmpDiff">Difference</button>' +
+                  '<button type="button" class="rv-cmp-btn" id="rvCmpSame">In common</button>' +
                 '</span>' +
                 '<span class="rv-cmp-status" id="rvCmpStatus" style="display:none"></span>' +
               '</div>' +
@@ -1048,8 +1092,9 @@
 
           // -- compare: vs typical man / typical woman (population data from
           //    the project page) or vs another survey id (simulated with the
-          //    same model). Rendered as the project page's diff mode:
-          //    triangle = this survey likes it more, circle = the other side.
+          //    same model, rendering live while it fills). Two views, both
+          //    borrowed from the project page: Difference (circle = you like
+          //    it more, triangle = they do) and In common (what both agree on).
           const POP_URL = 'https://andreaslindeman.com/projects_data/2020-color-polygraph/summary.json';
           const legend = s.querySelector('#rvCubeLegend');
           const cmpStatus = s.querySelector('#rvCmpStatus');
@@ -1058,21 +1103,40 @@
           const cmpWoman = s.querySelector('#rvCmpWoman');
           const cmpGo = s.querySelector('#rvCmpGo');
           const cmpInput = s.querySelector('#rvCmpId');
+          const cmpKindWrap = s.querySelector('#rvCmpKind');
+          const cmpDiff = s.querySelector('#rvCmpDiff');
+          const cmpSame = s.querySelector('#rvCmpSame');
           const cmpButtons = [cmpOff, cmpMan, cmpWoman, cmpGo];
           let popPromise = null;
           const cmpIdCache = Object.create(null);
-          let cmpToken = 0;  // latest-wins: stale async results are dropped
+          let cmpToken = 0;     // latest-wins: stale async results are dropped
+          let cmpCounts = null; // active comparison target
+          let cmpWho = '';
+          let cmpKind = 'diff';
 
           const setStatus = (msg, isError) => {
             cmpStatus.style.display = msg ? '' : 'none';
             cmpStatus.textContent = msg || '';
             cmpStatus.classList.toggle('is-error', !!isError);
           };
-          const applyCompare = (counts, who, btn) => {
-            if (_cubeController) _cubeController.setCompare(counts);
-            legend.textContent = counts ? ('▲ you · ● ' + who) : '';
-            cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+          const refreshCompare = () => {
+            if (_cubeController) _cubeController.setCompare(cmpCounts, cmpKind);
+            legend.textContent = !cmpCounts ? ''
+              : cmpKind === 'same' ? ('what you and ' + cmpWho + ' agree on')
+              : ('● you · ▲ ' + cmpWho);
+            cmpKindWrap.style.display = cmpCounts ? '' : 'none';
+            cmpDiff.classList.toggle('is-active', cmpKind === 'diff');
+            cmpSame.classList.toggle('is-active', cmpKind === 'same');
           };
+          const applyCompare = (counts, who, btn) => {
+            cmpCounts = counts;
+            cmpWho = who;
+            cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+            refreshCompare();
+          };
+          cmpDiff.addEventListener('click', () => { cmpKind = 'diff'; refreshCompare(); });
+          cmpSame.addEventListener('click', () => { cmpKind = 'same'; refreshCompare(); });
+
           const loadPop = () => {
             if (!popPromise) {
               popPromise = fetch(POP_URL).then(r => {
@@ -1108,29 +1172,32 @@
             const otherId = cmpInput.value.trim();
             if (!otherId) { cmpInput.focus(); return; }
             const tok = ++cmpToken;
+            const whoLabel = 'id ' + otherId.slice(0, 8) + '…';
             try {
-              let counts = cmpIdCache[otherId];
-              if (!counts) {
-                setStatus('fetching survey…');
-                const d = await getJson('/survey/' + encodeURIComponent(otherId));
-                if (tok !== cmpToken) return;
-                if (d.long_survey) { setStatus('long surveys are not supported yet', true); return; }
-                if (!d.features || !d.history) { setStatus('that survey has no model data', true); return; }
-                counts = await PickCube.simulateCounts({
-                  history: d.history,
-                  features: d.features,
-                  modelUrl: MODELS_BASE + 'pick_trees.json?v=2',
-                  totalAnswers: CUBE_ANSWERS,
-                  onProgress: (a, t) => {
-                    if (tok === cmpToken) setStatus('simulating their survey… ' + a.toLocaleString() + ' / ' + t.toLocaleString());
-                  },
-                  isStopped: () => tok !== cmpToken,
-                });
-                if (tok !== cmpToken) return;
-                cmpIdCache[otherId] = counts;
-              }
-              applyCompare(counts, 'id ' + otherId.slice(0, 8) + '…', cmpGo);
-              setStatus('');
+              const cached = cmpIdCache[otherId];
+              if (cached) { applyCompare(cached, whoLabel, cmpGo); setStatus(''); return; }
+              setStatus('fetching survey…');
+              const d = await getJson('/survey/' + encodeURIComponent(otherId));
+              if (tok !== cmpToken) return;
+              if (d.long_survey) { setStatus('long surveys are not supported yet', true); return; }
+              if (!d.features || !d.history) { setStatus('that survey has no model data', true); return; }
+              const sim = await PickCube.simulateCounts({
+                history: d.history,
+                features: d.features,
+                modelUrl: MODELS_BASE + 'pick_trees.json?v=2',
+                totalAnswers: CUBE_ANSWERS,
+                onProgress: (a, t) => {
+                  if (tok === cmpToken) setStatus('simulating their survey… ' + a.toLocaleString() + ' / ' + t.toLocaleString());
+                },
+                isStopped: () => tok !== cmpToken,
+              });
+              if (tok !== cmpToken) return;
+              // Render immediately; their counts keep filling in live.
+              applyCompare(sim.counts, whoLabel, cmpGo);
+              sim.done.then(() => {
+                if (tok === cmpToken) setStatus('');
+                cmpIdCache[otherId] = sim.counts;  // cache only completed runs
+              });
             } catch (err) {
               console.warn('compare id failed', err);
               if (tok === cmpToken) setStatus('could not load that survey id', true);
