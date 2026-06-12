@@ -19,6 +19,15 @@
   var ANSWERS_PER_BRACKET = 21;                // 16 + 4 + 1, same as a short survey
   var WEIGHTS = { w1: 0.5, w2: 0.5, wF: 0.5, wRej: 0 };  // project-page defaults
 
+  // The model answers PROBABILISTICALLY, like the humans it learned from: each
+  // candidate's sigmoid output is its pick-probability, and the answer is
+  // sampled from those (an argmax answer would make the single favourite win
+  // every quad, collapsing the cube to a handful of voxels after the display
+  // normalisation). SHARPNESS > 1 makes the model more decisive, < 1 more
+  // scattered. 1.5 measured well: ~170 love orbs with clear favourites
+  // (1 -> ~245 but flatter, 2 -> ~135 and starker).
+  var SHARPNESS = 1.5;
+
   // ---- survey-identical colour generation (copied from survey.html) ----
 
   function rgbToOklab(r, g, b) {
@@ -84,11 +93,26 @@
       var key = rgb[0] * 65536 + rgb[1] * 256 + rgb[2];
       var v = cache.get(key);
       if (v === undefined) {
-        v = TreeWalker.score(model, PickFeatures.featureRow(person, ctx, rgb));
+        // Pick-probability for this colour (sigmoid of the model logit),
+        // sharpened; cached because winners are re-scored as they advance.
+        v = Math.pow(
+          TreeWalker.sigmoid(TreeWalker.score(model, PickFeatures.featureRow(person, ctx, rgb))),
+          SHARPNESS);
         cache.set(key, v);
       }
       return v;
     };
+  }
+
+  // Sample one winner from a quad, proportional to pick-probability.
+  function answerQuestion(round, qs, score) {
+    var p0 = score(round[qs]), p1 = score(round[qs + 1]),
+        p2 = score(round[qs + 2]), p3 = score(round[qs + 3]);
+    var r = Math.random() * (p0 + p1 + p2 + p3);
+    if (r < p0) return round[qs];
+    if (r < p0 + p1) return round[qs + 1];
+    if (r < p0 + p1 + p2) return round[qs + 2];
+    return round[qs + 3];
   }
 
   // One synthetic short survey, answered by the model. Mutates counts.
@@ -99,12 +123,7 @@
     while (round.length > 1) {
       var winners = [];
       for (var qs = 0; qs < round.length; qs += 4) {
-        var best = round[qs], bv = score(round[qs]);
-        for (var i = 1; i < 4; i++) {
-          var c = round[qs + i];
-          var s = score(c);
-          if (s > bv) { bv = s; best = c; }
-        }
+        var best = answerQuestion(round, qs, score);
         if (stage === 0) {
           for (var j = 0; j < 4; j++) counts.off[voxelId(round[qs + j])] += 1;
           counts.r1[voxelId(best)] += 1;
@@ -279,6 +298,7 @@
     var stopped = false;
     var origStop = controller.stop;
     controller.stop = function () { stopped = true; origStop(); };
+    controller.counts = counts;  // exposed for debugging / tests
 
     function tick() {
       if (stopped) return;

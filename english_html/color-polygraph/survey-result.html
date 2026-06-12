@@ -530,6 +530,11 @@
       filter: saturate(0.7);
     }
 
+    /* The stats slide grew tall (cube + taste grids): top-align it so the
+       content above the fold stays scrollable. justify-content:center on an
+       overflowing flex column clips the top above the scroll origin. */
+    .rv-slide.rv-stats-slide { justify-content: flex-start; }
+
     /* ---- personal colour cube (embedded in the stats slide) ---- */
     .rv-cube-embed {
       max-width: 520px;
@@ -917,6 +922,7 @@
       ].join('');
 
       goSlide(s => {
+        s.classList.add('rv-stats-slide');
         s.innerHTML =
           makeDots('stats') +
           '<div class="rv-stats-layout">' +
