@@ -40,13 +40,16 @@
 
   // Diff-mode denoising, in mean-profile units. Two near-identical surveys
   // differ only by Monte-Carlo noise (measured: typical |d| ~0.2, maxAbs
-  // ~0.5-0.7 at the 200k default); real differences measure 2.5-2.9.
+  // ~0.5-0.65 at the 200k default); strangers' real differences reach 2.5-2.9.
   //  * DIFF_NOISE_FLOOR soft-thresholds every diff toward zero by the noise
-  //    scale, so sameness genuinely dies instead of being renormalised up.
-  //  * MIN_DIFF_SCALE stops the display from normalising tiny residuals back
-  //    to full size.
-  var DIFF_NOISE_FLOOR = 0.5;
-  var MIN_DIFF_SCALE = 2.0;
+  //    scale -- it alone decides WHAT is real enough to show, so identical
+  //    surveys genuinely die.
+  //  * Whatever survives is normalised to the pair's own strongest difference
+  //    (auto-gain), so a high-likeness pair's few real disagreements still
+  //    render at full size instead of as unreadable specks. MIN_DIFF_SCALE is
+  //    only a denominator guard against renormalising tiny residuals.
+  var DIFF_NOISE_FLOOR = 0.6;
+  var MIN_DIFF_SCALE = 0.5;
 
   // The model answers PROBABILISTICALLY, like the humans it learned from: each
   // candidate's sigmoid output is its pick-probability, and the answer is
@@ -513,7 +516,7 @@
     var numColors = opts.long ? 256 : 64;
     // Sanity line for tweaking via URL/console: confirms which build + config
     // is actually running (a cached old script won't print this shape).
-    console.info('[PickCube v7]', 'answers=' + total, 'colors=' + numColors,
+    console.info('[PickCube v8]', 'answers=' + total, 'colors=' + numColors,
       'weights=' + JSON.stringify(WEIGHTS), 'sharpness=' + SHARPNESS);
     var stopped = false;
     var origStop = controller.stop;
