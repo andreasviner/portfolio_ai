@@ -528,6 +528,13 @@
       transition: opacity 0.6s ease;
     }
     .rv-cube-loading.is-hidden { opacity: 0; pointer-events: none; }
+    .rv-cube-loading-pct {
+      font-family: var(--mono);
+      font-size: 24px;
+      letter-spacing: 0.06em;
+      color: var(--hobby);
+      margin: 0;
+    }
     .rv-cube-axes {
       position: absolute;
       top: 12px;
@@ -1061,7 +1068,7 @@
               '<div class="rv-cube-canvas-wrap">' +
                 '<canvas id="rvCubeCanvas"></canvas>' +
                 '<div class="rv-cube-axes"><span class="ax-r">R</span><span class="ax-g">G</span><span class="ax-b">B</span></div>' +
-                '<div class="rv-cube-loading" id="rvCubeLoading"><div class="rv-spinner"></div><p class="rv-loading-label">Tegner fargekuben din…</p></div>' +
+                '<div class="rv-cube-loading" id="rvCubeLoading"><div class="rv-spinner"></div><p class="rv-loading-label">Tegner fargekuben din…</p><p class="rv-cube-loading-pct" id="rvCubeLoadingPct">0 %</p></div>' +
               '</div>' +
               '<div class="rv-cube-progress" id="rvCubeProgress">' +
                 '<div class="rv-cube-progress-track"><div class="rv-cube-progress-fill" id="rvCubeFill"></div></div>' +
@@ -1120,6 +1127,7 @@
           const liked = s.querySelector('#rvCubeLiked');
           const rej = s.querySelector('#rvCubeRej');
           const cubeLoading = s.querySelector('#rvCubeLoading');
+          const cubeLoadingPct = s.querySelector('#rvCubeLoadingPct');
           // Keep the veil up until the cube has enough points to read cleanly.
           const CUBE_REVEAL_AT = Math.min(20000, CUBE_ANSWERS);
 
@@ -1136,6 +1144,7 @@
             onProgress: (answered, total) => {
               fill.style.width = (answered / total * 100).toFixed(1) + '%';
               label.textContent = answered.toLocaleString('no-NO') + ' / ' + total.toLocaleString('no-NO');
+              if (cubeLoadingPct) cubeLoadingPct.textContent = Math.min(100, Math.round(answered / CUBE_REVEAL_AT * 100)) + ' %';
               if (cubeLoading && answered >= CUBE_REVEAL_AT) cubeLoading.classList.add('is-hidden');
             },
             onDone: () => { progress.style.display = 'none'; if (cubeLoading) cubeLoading.classList.add('is-hidden'); refreshMeta(); },
