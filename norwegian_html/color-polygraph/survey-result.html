@@ -465,6 +465,250 @@
       filter: saturate(0.7);
     }
 
+    /* The stats slide grew tall (cube + taste grids): top-align it. */
+    .rv-slide.rv-stats-slide { justify-content: flex-start; }
+
+    /* ---- personal colour cube (embedded in the stats slide) ---- */
+    .rv-cube-embed {
+      max-width: 780px;
+      margin: 10px auto 34px;
+      padding: 18px 18px 16px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+    }
+    .rv-cube-eyebrow {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .rv-cube-legend {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: none;
+      color: var(--text-mute);
+    }
+    .rv-cube-canvas-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: radial-gradient(circle at 50% 45%, #131829 0%, #060810 80%);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .rv-cube-canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: grab;
+    }
+    .rv-cube-canvas-wrap canvas:active { cursor: grabbing; }
+    /* Loading veil over the cube: hide the early noise behind the (identical)
+       empty stage + a spinner until enough points have accumulated. */
+    .rv-cube-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: radial-gradient(circle at 50% 45%, #131829 0%, #060810 80%);
+      transition: opacity 0.6s ease;
+    }
+    .rv-cube-loading.is-hidden { opacity: 0; pointer-events: none; }
+    .rv-cube-axes {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      display: flex;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-mute);
+      pointer-events: none;
+    }
+    .rv-cube-axes span::before {
+      content: '';
+      display: inline-block;
+      width: 7px; height: 7px;
+      margin-right: 5px;
+      vertical-align: 1px;
+      border-radius: 50%;
+    }
+    .rv-cube-axes .ax-r::before { background: #ff6464; }
+    .rv-cube-axes .ax-g::before { background: #66dd6e; }
+    .rv-cube-axes .ax-b::before { background: #6aa6ff; }
+    /* compare row */
+    .rv-cube-compare {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--hairline);
+    }
+    .rv-cube-compare-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-right: 2px;
+    }
+    .rv-cmp-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px solid var(--hairline);
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .rv-cmp-btn:hover { color: var(--text); border-color: var(--hairline-2); }
+    .rv-cmp-btn.is-active {
+      background: rgba(245, 185, 92, 0.12);
+      color: var(--hobby);
+      border-color: rgba(245, 185, 92, 0.4);
+    }
+    .rv-cmp-id-wrap {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .rv-cmp-id-wrap input {
+      font-family: var(--mono);
+      font-size: 10px;
+      width: 150px;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--hairline);
+      border-radius: 2px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .rv-cmp-id-wrap input:focus {
+      outline: none;
+      border-color: rgba(245, 185, 92, 0.5);
+    }
+    .rv-cmp-kind {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-left: auto;
+      padding-left: 10px;
+      border-left: 1px solid var(--hairline);
+    }
+    .rv-cmp-status {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      flex-basis: 100%;
+    }
+    .rv-cmp-status.is-error { color: #d97b6a; }
+    .rv-cmp-warn {
+      flex-basis: 100%;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      line-height: 1.6;
+      color: rgba(245, 185, 92, 0.75);
+    }
+    .rv-cmp-warn a {
+      color: var(--hobby);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    /* likeness / fun facts row, shown while comparing */
+    .rv-cmp-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--hairline);
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+    }
+    .rv-cmp-meta b {
+      color: var(--hobby);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    .rv-cmp-meta i {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      vertical-align: -2px;
+      margin-left: 5px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .rv-cube-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 0;
+    }
+    .rv-cube-progress-track {
+      flex: 1 1 auto;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--hairline-2);
+      overflow: hidden;
+    }
+    .rv-cube-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--hobby);
+      border-radius: 2px;
+      transition: width 0.18s ease;
+    }
+    .rv-cube-progress-label {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .rv-cube-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .rv-cube-toggle { display: flex; gap: 8px; }
+    .rv-cube-toggle .rv-btn[aria-pressed="false"] {
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px solid var(--hairline);
+    }
+
     @media (max-width: 600px) {
       .rv-stats-layout { grid-template-columns: 1fr; }
       .rv-winner-swatch { max-width: 130px; }
@@ -515,7 +759,12 @@
 
   <div class="rv-wrap" id="rvWrap"></div>
 
-  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/tree_walker.js"></script>
+  <!-- Cube scripts live on the .com AI subdomain (no local copy here); the
+       gender/age/mood models are already loaded from there too. -->
+  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/tree_walker.js?v=2"></script>
+  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/taste_features.js?v=2"></script>
+  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/pick_features.js?v=2"></script>
+  <script src="https://ai.andreaslindeman.com/color-polygraph/models-js/pick_cube.js?v=8"></script>
   <script>
   (function () {
     const DEFAULT_API_URL = 'https://api.andreaslindeman.com/color-polygraph';
@@ -530,6 +779,16 @@
     })();
     const MODELS_BASE = 'https://ai.andreaslindeman.com/color-polygraph/models-js/';
     const MODEL_CACHE = Object.create(null);
+
+    // How many fresh survey questions the pick model answers for the colour
+    // cube (single source of truth in pick_cube.js); override with ?answers=NNNN.
+    const CUBE_ANSWERS = (function () {
+      try {
+        const v = parseInt(new URLSearchParams(window.location.search).get('answers'), 10);
+        if (v > 0) return v;
+      } catch (_e) {}
+      return PickCube.TOTAL_ANSWERS;
+    })();
 
     function loadModel(name) {
       if (MODEL_CACHE[name]) return MODEL_CACHE[name];
@@ -565,6 +824,7 @@
     // ---- Slide engine ----
     const wrap = document.getElementById('rvWrap');
     let _current = null;
+    let _cubeController = null;  // running cube render loop, if any
 
     function goSlide(buildFn) {
       if (_current) {
@@ -762,7 +1022,10 @@
     }
 
     function showStatsSlide(opts) {
-      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId, long } = opts;
+      const { w, confirmedGender, confirmedAge, confirmedMood, score, history, picks, fromId, long, features } = opts;
+      // Fargekuben trenger prod-feature-vektorene (ferske fra POST /survey, eller
+      // regenerert av GET /survey/:id). Korte og lange surveyer har hver sin pick-modell.
+      const canCube = !!history && !!(features && features.gender);
       const pickCount = picks && picks.length ? picks.length : null;
       const totalMs = picks && picks.length ? picks[picks.length - 1].cumulativeMs : 0;
       const totalS = Math.round(totalMs / 1000);
@@ -778,6 +1041,7 @@
       ].join('');
 
       goSlide(s => {
+        s.classList.add('rv-stats-slide');
         s.innerHTML =
           makeDots('statistikk') +
           '<div class="rv-stats-layout">' +
@@ -791,6 +1055,46 @@
               (history ? buildHueStrip(history) : '') +
             '</div>' +
           '</div>' +
+          (canCube ?
+            '<div class="rv-cube-embed">' +
+              '<p class="rv-cube-eyebrow">Fargekube<span class="rv-cube-legend" id="rvCubeLegend"></span></p>' +
+              '<div class="rv-cube-canvas-wrap">' +
+                '<canvas id="rvCubeCanvas"></canvas>' +
+                '<div class="rv-cube-axes"><span class="ax-r">R</span><span class="ax-g">G</span><span class="ax-b">B</span></div>' +
+                '<div class="rv-cube-loading" id="rvCubeLoading"><div class="rv-spinner"></div><p class="rv-loading-label">Tegner fargekuben din…</p></div>' +
+              '</div>' +
+              '<div class="rv-cube-progress" id="rvCubeProgress">' +
+                '<div class="rv-cube-progress-track"><div class="rv-cube-progress-fill" id="rvCubeFill"></div></div>' +
+                '<span class="rv-cube-progress-label" id="rvCubeLabel">laster modell…</span>' +
+              '</div>' +
+              '<div class="rv-cube-controls">' +
+                '<div class="rv-cube-toggle">' +
+                  '<button type="button" class="rv-btn is-yes" id="rvCubeLiked" aria-pressed="true">Tiltrukket av</button>' +
+                  '<button type="button" class="rv-btn is-no" id="rvCubeRej" aria-pressed="false">Valgte bort</button>' +
+                '</div>' +
+              '</div>' +
+              '<div class="rv-cube-compare">' +
+                '<span class="rv-cube-compare-label">Sammenlign</span>' +
+                '<button type="button" class="rv-cmp-btn is-active" id="rvCmpOff">Bare meg</button>' +
+                '<button type="button" class="rv-cmp-btn" id="rvCmpMan">Typisk mann</button>' +
+                '<button type="button" class="rv-cmp-btn" id="rvCmpWoman">Typisk kvinne</button>' +
+                '<span class="rv-cmp-id-wrap">' +
+                  '<input type="text" id="rvCmpId" placeholder="survey-id eller lenke…" spellcheck="false">' +
+                  '<button type="button" class="rv-cmp-btn" id="rvCmpGo">Kjør</button>' +
+                '</span>' +
+                '<span class="rv-cmp-kind" id="rvCmpKind" style="display:none">' +
+                  '<button type="button" class="rv-cmp-btn is-active" id="rvCmpDiff">Forskjell</button>' +
+                  '<button type="button" class="rv-cmp-btn" id="rvCmpSame">Til felles</button>' +
+                '</span>' +
+                '<span class="rv-cmp-status" id="rvCmpStatus" style="display:none"></span>' +
+                '<span class="rv-cmp-warn" id="rvCmpWarn" style="display:none">' +
+                  'Obs: korte tester er mindre nøyaktige enn lange. ' +
+                  '<a href="survey?type=long">Ta den lange testen</a> for en skarpere sammenligning.' +
+                '</span>' +
+              '</div>' +
+              '<div class="rv-cmp-meta" id="rvCmpMeta" style="display:none"></div>' +
+            '</div>'
+          : '') +
           (history ? buildTasteSection(history, w.hex) : '') +
           (score != null ? '<p class="rv-score">Modellen fikk <b>' + score + ' av 3</b> riktig.</p>' : '') +
           '<div class="rv-actions">' +
@@ -806,6 +1110,212 @@
         s.querySelector('#rvRetake').addEventListener('click', () => {
           window.location.href = long ? 'survey?type=long' : 'survey?type=short';
         });
+
+        // Colour cube: the pick model retakes the survey live, filling the
+        // cube as it answers; the bar below it tracks progress.
+        if (canCube) {
+          const progress = s.querySelector('#rvCubeProgress');
+          const fill = s.querySelector('#rvCubeFill');
+          const label = s.querySelector('#rvCubeLabel');
+          const liked = s.querySelector('#rvCubeLiked');
+          const rej = s.querySelector('#rvCubeRej');
+          const cubeLoading = s.querySelector('#rvCubeLoading');
+          // Keep the veil up until the cube has enough points to read cleanly.
+          const CUBE_REVEAL_AT = Math.min(20000, CUBE_ANSWERS);
+
+          if (_cubeController) { _cubeController.stop(); _cubeController = null; }
+          let refreshMeta = () => {};  // assigned by the compare block below
+          // bump ?v= on retrain (model JSON is force-cached)
+          const pickModelUrl = (isLong) => MODELS_BASE + (isLong ? 'pick_long_trees.json?v=1' : 'pick_trees.json?v=2');
+          PickCube.mount(s.querySelector('#rvCubeCanvas'), {
+            history,
+            features,
+            long: !!long,
+            modelUrl: pickModelUrl(long),
+            totalAnswers: CUBE_ANSWERS,
+            onProgress: (answered, total) => {
+              fill.style.width = (answered / total * 100).toFixed(1) + '%';
+              label.textContent = answered.toLocaleString('no-NO') + ' / ' + total.toLocaleString('no-NO');
+              if (cubeLoading && answered >= CUBE_REVEAL_AT) cubeLoading.classList.add('is-hidden');
+            },
+            onDone: () => { progress.style.display = 'none'; if (cubeLoading) cubeLoading.classList.add('is-hidden'); refreshMeta(); },
+          }).then(controller => {
+            _cubeController = controller;
+          }).catch(err => {
+            console.warn('cube build failed', err);
+            label.textContent = 'kuben er utilgjengelig';
+          });
+
+          const setMode = (inv) => {
+            if (_cubeController) _cubeController.setInverted(inv);
+            liked.setAttribute('aria-pressed', String(!inv));
+            rej.setAttribute('aria-pressed', String(inv));
+            liked.className = 'rv-btn ' + (inv ? 'is-no' : 'is-yes');
+            rej.className = 'rv-btn ' + (inv ? 'is-yes' : 'is-no');
+          };
+          liked.addEventListener('click', () => setMode(false));
+          rej.addEventListener('click', () => setMode(true));
+
+          // -- compare: vs typical man / typical woman (population data) or vs
+          //    another survey id (simulated with the same model, rendering live).
+          const POP_URL = 'https://andreaslindeman.no/projects_data/2020-color-polygraph/summary.json';
+          const legend = s.querySelector('#rvCubeLegend');
+          const cmpStatus = s.querySelector('#rvCmpStatus');
+          const cmpOff = s.querySelector('#rvCmpOff');
+          const cmpMan = s.querySelector('#rvCmpMan');
+          const cmpWoman = s.querySelector('#rvCmpWoman');
+          const cmpGo = s.querySelector('#rvCmpGo');
+          const cmpInput = s.querySelector('#rvCmpId');
+          const cmpKindWrap = s.querySelector('#rvCmpKind');
+          const cmpDiff = s.querySelector('#rvCmpDiff');
+          const cmpSame = s.querySelector('#rvCmpSame');
+          const cmpButtons = [cmpOff, cmpMan, cmpWoman, cmpGo];
+          const cmpMeta = s.querySelector('#rvCmpMeta');
+          const cmpWarn = s.querySelector('#rvCmpWarn');
+          let popPromise = null;
+          const cmpIdCache = Object.create(null);  // id -> {counts, isLong}
+          let cmpToken = 0;     // latest-wins: stale async results are dropped
+          let cmpCounts = null; // active comparison target
+          let cmpWho = '';
+          let cmpKind = 'diff';
+
+          // Accept either a bare survey id or a pasted URL with ?id= / ?id2=.
+          const parseSurveyId = (raw) => {
+            const v = (raw || '').trim();
+            const m = v.match(/[?&]id2?=([^&#\s]+)/);
+            return m ? decodeURIComponent(m[1]) : v;
+          };
+
+          const setStatus = (msg, isError) => {
+            cmpStatus.style.display = msg ? '' : 'none';
+            cmpStatus.textContent = msg || '';
+            cmpStatus.classList.toggle('is-error', !!isError);
+          };
+          // Accuracy note for id comparisons where either side is a short survey.
+          const setWarn = (show) => { cmpWarn.style.display = show ? '' : 'none'; };
+          const swatch = (hex) => '<i style="background:' + hex + '" title="' + hex + '"></i>';
+          refreshMeta = () => {
+            if (!cmpCounts || !_cubeController || !_cubeController.counts) {
+              cmpMeta.style.display = 'none';
+              cmpMeta.innerHTML = '';
+              return;
+            }
+            const st = PickCube.compareStats(_cubeController.counts, cmpCounts);
+            cmpMeta.innerHTML =
+              '<span>Likhet <b>' + st.percent + '%</b></span>' +
+              '<span>Begge liker' + swatch(st.bothLikeHex) + '</span>' +
+              '<span>Begge hopper over' + swatch(st.bothHateHex) + '</span>' +
+              '<span>Du liker, de hopper over' + swatch(st.youLikeHex) + '</span>' +
+              '<span>De liker, du hopper over' + swatch(st.theyLikeHex) + '</span>';
+            cmpMeta.style.display = '';
+          };
+          // Keep the stats live while either side's simulation is still filling in.
+          setInterval(() => { if (cmpCounts) refreshMeta(); }, 600);
+          const refreshCompare = () => {
+            if (_cubeController) _cubeController.setCompare(cmpCounts, cmpKind);
+            legend.textContent = !cmpCounts ? ''
+              : cmpKind === 'same' ? ('hva du og ' + cmpWho + ' er enige om')
+              : ('● deg · ▲ ' + cmpWho);
+            cmpKindWrap.style.display = cmpCounts ? '' : 'none';
+            cmpDiff.classList.toggle('is-active', cmpKind === 'diff');
+            cmpSame.classList.toggle('is-active', cmpKind === 'same');
+            refreshMeta();
+          };
+          const applyCompare = (counts, who, btn) => {
+            cmpCounts = counts;
+            cmpWho = who;
+            cmpButtons.forEach(b => b.classList.toggle('is-active', b === btn));
+            refreshCompare();
+          };
+          cmpDiff.addEventListener('click', () => { cmpKind = 'diff'; refreshCompare(); });
+          cmpSame.addEventListener('click', () => { cmpKind = 'same'; refreshCompare(); });
+
+          const loadPop = () => {
+            if (!popPromise) {
+              popPromise = fetch(POP_URL).then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+              }).catch(err => { popPromise = null; throw err; });
+            }
+            return popPromise;
+          };
+          const compareGender = async (key, who, btn) => {
+            const tok = ++cmpToken;
+            setStatus('laster befolkningsdata…');
+            try {
+              const pop = await loadPop();
+              if (tok !== cmpToken) return;
+              applyCompare(PickCube.countsFromPopulation(pop.buckets[key].v), who, btn);
+              setStatus('');
+            } catch (err) {
+              console.warn('population data failed', err);
+              if (tok === cmpToken) setStatus('kunne ikke laste befolkningsdata', true);
+            }
+          };
+
+          cmpOff.addEventListener('click', () => {
+            cmpToken++;
+            setStatus('');
+            setWarn(false);
+            applyCompare(null, '', cmpOff);
+          });
+          cmpMan.addEventListener('click', () => { setWarn(false); compareGender('g_all', 'typisk mann', cmpMan); });
+          cmpWoman.addEventListener('click', () => { setWarn(false); compareGender('j_all', 'typisk kvinne', cmpWoman); });
+
+          const compareId = async () => {
+            const otherId = parseSurveyId(cmpInput.value);
+            if (!otherId) { cmpInput.focus(); return; }
+            // Reflect the stripped id back so a pasted link shows what was used.
+            if (cmpInput.value.trim() !== otherId) cmpInput.value = otherId;
+            const tok = ++cmpToken;
+            const whoLabel = 'id ' + otherId.slice(0, 8) + '…';
+            try {
+              const cached = cmpIdCache[otherId];
+              if (cached) {
+                applyCompare(cached.counts, whoLabel, cmpGo);
+                setWarn(!long || !cached.isLong);
+                setStatus('');
+                return;
+              }
+              setStatus('henter survey…');
+              const d = await getJson('/survey/' + encodeURIComponent(otherId));
+              if (tok !== cmpToken) return;
+              if (!d.features || !d.history) { setStatus('den surveyen har ingen modelldata', true); return; }
+              // The other survey simulates with ITS OWN length + model.
+              const sim = await PickCube.simulateCounts({
+                history: d.history,
+                features: d.features,
+                long: !!d.long_survey,
+                modelUrl: pickModelUrl(d.long_survey),
+                totalAnswers: CUBE_ANSWERS,
+                onProgress: (a, t) => {
+                  if (tok === cmpToken) setStatus('simulerer deres survey… ' + a.toLocaleString('no-NO') + ' / ' + t.toLocaleString('no-NO'));
+                },
+                isStopped: () => tok !== cmpToken,
+              });
+              if (tok !== cmpToken) return;
+              applyCompare(sim.counts, whoLabel, cmpGo);
+              setWarn(!long || !d.long_survey);
+              sim.done.then(() => {
+                cmpIdCache[otherId] = { counts: sim.counts, isLong: !!d.long_survey };
+                if (tok === cmpToken) setStatus('');
+              });
+            } catch (err) {
+              console.warn('compare id failed', err);
+              if (tok === cmpToken) setStatus('kunne ikke laste den survey-id-en', true);
+            }
+          };
+          cmpGo.addEventListener('click', compareId);
+          cmpInput.addEventListener('keydown', e => { if (e.key === 'Enter') compareId(); });
+
+          // ?id2=<survey id> starts the cube in difference mode against that
+          // survey right away (shareable comparison link).
+          try {
+            const id2 = new URLSearchParams(window.location.search).get('id2');
+            if (id2) { cmpInput.value = id2; compareId(); }
+          } catch (_e) {}
+        }
+
         s.querySelector('#rvShare').addEventListener('click', () => {
           const picksStr = pickCount ? pickCount + ' fargevalg' : 'fargevalg alene';
           const tasteStr = phrase ? 'Fargesmaken min er ' + phrase.toLowerCase() + ', bygget rundt ' + w.hex.toUpperCase() + '.'
@@ -865,6 +1375,7 @@
         picks: data.picks || null,
         fromId: true,
         long: !!data.long_survey,
+        features: data.features || null,
       });
     }
 
@@ -1037,6 +1548,7 @@
         picks: savedState.picks,
         fromId: false,
         long: isLong,
+        features,
       });
     }
 

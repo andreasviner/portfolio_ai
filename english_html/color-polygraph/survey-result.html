@@ -1123,7 +1123,7 @@
                 '<button type="button" class="rv-cmp-btn" id="rvCmpMan">Typical man</button>' +
                 '<button type="button" class="rv-cmp-btn" id="rvCmpWoman">Typical woman</button>' +
                 '<span class="rv-cmp-id-wrap">' +
-                  '<input type="text" id="rvCmpId" placeholder="survey id…" spellcheck="false">' +
+                  '<input type="text" id="rvCmpId" placeholder="survey id or link…" spellcheck="false">' +
                   '<button type="button" class="rv-cmp-btn" id="rvCmpGo">Go</button>' +
                 '</span>' +
                 '<span class="rv-cmp-kind" id="rvCmpKind" style="display:none">' +
@@ -1229,6 +1229,14 @@
           let cmpWho = '';
           let cmpKind = 'diff';
 
+          // Accept either a bare survey id or a pasted URL with ?id= / ?id2= --
+          // people often paste the whole link without stripping the id.
+          const parseSurveyId = (raw) => {
+            const v = (raw || '').trim();
+            const m = v.match(/[?&]id2?=([^&#\s]+)/);
+            return m ? decodeURIComponent(m[1]) : v;
+          };
+
           const setStatus = (msg, isError) => {
             cmpStatus.style.display = msg ? '' : 'none';
             cmpStatus.textContent = msg || '';
@@ -1307,8 +1315,10 @@
           cmpWoman.addEventListener('click', () => { setWarn(false); compareGender('j_all', 'typical woman', cmpWoman); });
 
           const compareId = async () => {
-            const otherId = cmpInput.value.trim();
+            const otherId = parseSurveyId(cmpInput.value);
             if (!otherId) { cmpInput.focus(); return; }
+            // Reflect the stripped id back so a pasted link shows what was used.
+            if (cmpInput.value.trim() !== otherId) cmpInput.value = otherId;
             const tok = ++cmpToken;
             const whoLabel = 'id ' + otherId.slice(0, 8) + '…';
             try {
