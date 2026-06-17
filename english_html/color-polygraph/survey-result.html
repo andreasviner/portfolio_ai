@@ -557,6 +557,22 @@
       cursor: grab;
     }
     .rv-cube-canvas-wrap canvas:active { cursor: grabbing; }
+    /* Loading veil over the cube: the model needs a few thousand answers before
+       the voxels settle, so hide the early noise behind the (identical) empty
+       stage + a spinner until enough points have accumulated, then fade it out. */
+    .rv-cube-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: radial-gradient(circle at 50% 45%, #131829 0%, #060810 80%);
+      transition: opacity 0.6s ease;
+    }
+    .rv-cube-loading.is-hidden { opacity: 0; pointer-events: none; }
     .rv-cube-axes {
       position: absolute;
       top: 12px;
@@ -1089,6 +1105,7 @@
               '<div class="rv-cube-canvas-wrap">' +
                 '<canvas id="rvCubeCanvas"></canvas>' +
                 '<div class="rv-cube-axes"><span class="ax-r">R</span><span class="ax-g">G</span><span class="ax-b">B</span></div>' +
+                '<div class="rv-cube-loading" id="rvCubeLoading"><div class="rv-spinner"></div><p class="rv-loading-label">Rendering your colour cube…</p></div>' +
               '</div>' +
               '<div class="rv-cube-progress" id="rvCubeProgress">' +
                 '<div class="rv-cube-progress-track"><div class="rv-cube-progress-fill" id="rvCubeFill"></div></div>' +
@@ -1148,6 +1165,10 @@
           const label = s.querySelector('#rvCubeLabel');
           const liked = s.querySelector('#rvCubeLiked');
           const rej = s.querySelector('#rvCubeRej');
+          const cubeLoading = s.querySelector('#rvCubeLoading');
+          // Keep the veil up until the cube has enough points to read cleanly.
+          // Capped at the total so a small ?answers=NNNN run still reveals.
+          const CUBE_REVEAL_AT = Math.min(20000, CUBE_ANSWERS);
 
           if (_cubeController) { _cubeController.stop(); _cubeController = null; }
           let refreshMeta = () => {};  // assigned by the compare block below
@@ -1162,8 +1183,9 @@
             onProgress: (answered, total) => {
               fill.style.width = (answered / total * 100).toFixed(1) + '%';
               label.textContent = answered.toLocaleString() + ' / ' + total.toLocaleString();
+              if (cubeLoading && answered >= CUBE_REVEAL_AT) cubeLoading.classList.add('is-hidden');
             },
-            onDone: () => { progress.style.display = 'none'; refreshMeta(); },
+            onDone: () => { progress.style.display = 'none'; if (cubeLoading) cubeLoading.classList.add('is-hidden'); refreshMeta(); },
           }).then(controller => {
             _cubeController = controller;
           }).catch(err => {
@@ -1459,7 +1481,7 @@
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>' +
                 '<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ' + other + '</button>' +
-                '<button type="button" class="rv-btn is-no" id="rvGNB">Non-binary</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGNB">Actually I’m non-binary</button>' +
               '</div>';
             s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
             s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
