@@ -856,7 +856,8 @@
 
       showStatsSlide({
         w,
-        confirmedGender: data.confirmed_gender,
+        // API returns canonical English; map back to the Norwegian display word.
+        confirmedGender: { 'man': 'mann', 'woman': 'kvinne', 'non-binary': 'ikke-binær' }[data.confirmed_gender] || data.confirmed_gender,
         confirmedAge: data.confirmed_age,
         confirmedMood: data.confirmed_mood,
         score: data.correct_count,
@@ -925,15 +926,20 @@
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvGY">Stemmer!</button>' +
                 '<button type="button" class="rv-btn is-no" id="rvGN">Jeg er faktisk en ' + other + '</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGNB">Ikke-binær</button>' +
               '</div>';
             s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
             s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
+            s.querySelector('#rvGNB').addEventListener('click', () => resolve('ikke-binær'));
           });
         });
 
         if (confirmedGender === predGenderLabel) summary.correct += 1;
+        // The API stores canonical English labels ('man' | 'woman' | 'non-binary');
+        // map the Norwegian display value before posting.
+        const genderApiLabel = { 'mann': 'man', 'kvinne': 'woman', 'ikke-binær': 'non-binary' }[confirmedGender] || confirmedGender;
         postJson('/survey/' + encodeURIComponent(surveyId) + '/gender', {
-          pred_prob: prob, confirmed_label: confirmedGender,
+          pred_prob: prob, confirmed_label: genderApiLabel,
         }).catch(e => console.warn('gender post failed', e));
       } catch (err) {
         console.warn('gender step failed', err);

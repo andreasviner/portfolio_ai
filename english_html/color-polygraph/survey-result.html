@@ -1225,9 +1225,9 @@
             cmpMeta.innerHTML =
               '<span>Likeness <b>' + st.percent + '%</b></span>' +
               '<span>Both like' + swatch(st.bothLikeHex) + '</span>' +
-              '<span>Both hate' + swatch(st.bothHateHex) + '</span>' +
-              '<span>You like, they hate' + swatch(st.youLikeHex) + '</span>' +
-              '<span>They like, you hate' + swatch(st.theyLikeHex) + '</span>';
+              '<span>Both skip' + swatch(st.bothHateHex) + '</span>' +
+              '<span>You like, they skip' + swatch(st.youLikeHex) + '</span>' +
+              '<span>They like, you skip' + swatch(st.theyLikeHex) + '</span>';
             cmpMeta.style.display = '';
           };
           // Keep the stats live while either side's simulation is still
@@ -1459,9 +1459,11 @@
               '<div class="rv-btns">' +
                 '<button type="button" class="rv-btn is-yes" id="rvGY">That’s right</button>' +
                 '<button type="button" class="rv-btn is-no" id="rvGN">Actually I’m a ' + other + '</button>' +
+                '<button type="button" class="rv-btn is-no" id="rvGNB">Non-binary</button>' +
               '</div>';
             s.querySelector('#rvGY').addEventListener('click', () => resolve(predGenderLabel));
             s.querySelector('#rvGN').addEventListener('click', () => resolve(other));
+            s.querySelector('#rvGNB').addEventListener('click', () => resolve('non-binary'));
           });
         });
 
