@@ -113,6 +113,11 @@
       text-transform: uppercase;
       margin: 0 0 18px;
     }
+    .lb-subhead {
+      margin: 34px 0 0;
+      font-size: 16px;
+      letter-spacing: 0.01em;
+    }
     .lb-legend .dot {
       display: inline-block;
       width: 8px; height: 8px;
@@ -251,12 +256,20 @@
             </tr>
           </thead>
           <tbody>
+            <!-- LB:VERSIONS:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
             <tr>
-              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon)</span></a></td>
-              <td class="lb-score lb-score-best">0.886</td>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.1</span></a></td>
+              <td class="lb-score lb-score-best">0.890</td>
+              <td class="lb-score">6.77</td>
+              <td class="lb-score">8.79</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.0</span></a></td>
+              <td class="lb-score">0.886</td>
               <td class="lb-score lb-score-best">6.48</td>
               <td class="lb-score lb-score-best">8.76</td>
             </tr>
+            <!-- LB:VERSIONS:END -->
             <tr>
               <td><a class="lb-arch-link" href="models/lgb-buckets"><span class="lb-arch">LightGBM + bucket-skårer</span></a></td>
               <td class="lb-score">0.881</td>
@@ -339,8 +352,43 @@
         </table>
       </div>
 
+      <h3 class="lb-subhead">Fargevalg-modeller</h3>
+      <p class="lb-legend">
+        <span>treffrate = hvor ofte modellens høyest skårede farge matcher menneskets valg</span>
+        <span>tilfeldig = 0.25 (en av fire)</span>
+        <span>lekkasjeport bør ligge nær tilfeldig</span>
+      </p>
+      <div class="lb-wrap">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Modell</th>
+              <th>Treffrate</th>
+              <th>AUC</th>
+              <th>Lekkasjeport</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- LB:PICK:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
+            <tr>
+              <td><span class="lb-arch lb-arch-plain">Fargevalg (kort test)</span></td>
+              <td class="lb-score">0.498</td>
+              <td class="lb-score">0.713</td>
+              <td class="lb-score">0.263</td>
+            </tr>
+            <tr>
+              <td><span class="lb-arch lb-arch-plain">Fargevalg (lang test)</span></td>
+              <td class="lb-score">0.507</td>
+              <td class="lb-score">0.740</td>
+              <td class="lb-score">0.256</td>
+            </tr>
+            <!-- LB:PICK:END -->
+          </tbody>
+        </table>
+      </div>
+
       <p class="lb-note">
-        Sist oppdatert: 2026-05-23. Lenkede arkitekturnavn åpner en per-modell-detaljside
+        Sist oppdatert: 2026-06-18. Lenkede arkitekturnavn åpner en per-modell-detaljside
         i <a href="models/" class="lb-folder">models/</a>. 441-feature-engineering-rørledningen
         er dokumentert på
         <a href="info/features" class="lb-folder">info/features.html</a>.
