@@ -118,6 +118,41 @@
       font-size: 16px;
       letter-spacing: 0.01em;
     }
+    .lb-toggle {
+      display: inline-flex;
+      gap: 4px;
+      margin: 0 0 18px;
+      padding: 3px;
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+    .lb-toggle-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      background: transparent;
+      border: 0;
+      padding: 7px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .lb-toggle-btn.is-active {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+    .lb-view[hidden] { display: none; }
+    .lb-disclaimer {
+      border-left: 2px solid var(--hobby);
+      padding: 10px 14px;
+      margin: 0 0 18px;
+      background: rgba(255, 255, 255, 0.02);
+      line-height: 1.6;
+      max-width: 760px;
+    }
     .lb-legend .dot {
       display: inline-block;
       width: 8px; height: 8px;
@@ -239,6 +274,41 @@
     <section class="project-section">
       <h2>Leaderboard</h2>
 
+      <div class="lb-toggle" role="tablist" aria-label="Testtype">
+        <button type="button" class="lb-toggle-btn is-active" data-view="short" role="tab" aria-selected="true">Kort test</button>
+        <button type="button" class="lb-toggle-btn" data-view="long" role="tab" aria-selected="false">Lang test</button>
+      </div>
+      <script>
+        (function(){
+          function sel(view){
+            document.querySelectorAll('.lb-toggle-btn').forEach(function(b){
+              var on = b.dataset.view === view;
+              b.classList.toggle('is-active', on);
+              b.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            document.querySelectorAll('.lb-view').forEach(function(v){
+              v.hidden = v.dataset.view !== view;
+            });
+          }
+          document.querySelectorAll('.lb-toggle-btn').forEach(function(b){
+            b.addEventListener('click', function(){ sel(b.dataset.view); });
+          });
+        })();
+      </script>
+
+      <p class="lb-note lb-disclaimer">
+        Om tallene. Arkitektur-radene er 5-fold kryss-validering på det
+        opprinnelige 2020-datasettet, som er ungt, og farge forutsier kjønn
+        sterkest hos små barn. Lang test-visningen (og de nyeste live-dataene)
+        måles på dagens deltakere, som nesten alle er voksne og skjevt mot menn,
+        en gruppe der fargesmak avslører langt mindre om kjønn. De lavere tallene
+        for lang test er derfor et vanskeligere og mer representativt testsett,
+        ikke en dårligere modell. På den samme voksne gruppen slår den lange testen
+        fortsatt den korte, vist av referanseraden "kort modell, samme folk" i
+        lang test-visningen.
+      </p>
+
+      <div class="lb-view" data-view="short">
       <p class="lb-legend">
         <span><span class="dot"></span> beste skår per kolonne</span>
         <span>kjønn = ROC-AUC, høyere er bedre</span>
@@ -257,6 +327,12 @@
           </thead>
           <tbody>
             <!-- LB:VERSIONS:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.2</span></a></td>
+              <td class="lb-score lb-score-best">0.912</td>
+              <td class="lb-score lb-score-best">5.85</td>
+              <td class="lb-score">8.79</td>
+            </tr>
             <tr>
               <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.1</span></a></td>
               <td class="lb-score lb-score-best">0.912</td>
@@ -351,6 +427,43 @@
           </tbody>
         </table>
       </div>
+      </div><!-- /lb-view short -->
+
+      <div class="lb-view" data-view="long" hidden>
+      <p class="lb-legend">
+        <span><span class="dot"></span> beste skår per kolonne</span>
+        <span>lang test: 256 farger, ekte + syntetisk</span>
+        <span>metrikker på 30% holdt-ut ekte lange tester</span>
+      </p>
+      <div class="lb-wrap">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Modell</th>
+              <th>Kjønn AUC</th>
+              <th>Alder MAE</th>
+              <th>Humør MAE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- LB:VERSIONS_LONG:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM lang (produksjon) v1.2</span></a></td>
+              <td class="lb-score lb-score-best">0.764</td>
+              <td class="lb-score lb-score-best">6.98</td>
+              <td class="lb-score lb-score-best">10.59</td>
+            </tr>
+            <tr>
+              <td><span class="lb-arch lb-arch-plain">Kort modell, samme folk</span></td>
+              <td class="lb-score lb-na">0.733</td>
+              <td class="lb-score lb-na">7.29</td>
+              <td class="lb-score lb-na">14.17</td>
+            </tr>
+            <!-- LB:VERSIONS_LONG:END -->
+          </tbody>
+        </table>
+      </div>
+      </div><!-- /lb-view long -->
 
       <h3 class="lb-subhead">Fargevalg-modeller</h3>
       <p class="lb-legend">
@@ -378,8 +491,8 @@
             </tr>
             <tr>
               <td><span class="lb-arch lb-arch-plain">Fargevalg (lang test)</span></td>
-              <td class="lb-score">0.484</td>
-              <td class="lb-score">0.720</td>
+              <td class="lb-score">0.490</td>
+              <td class="lb-score">0.722</td>
               <td class="lb-score">0.252</td>
             </tr>
             <!-- LB:PICK:END -->
