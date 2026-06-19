@@ -308,6 +308,20 @@
         lang test-visningen.
       </p>
 
+      <p class="lb-note lb-disclaimer">
+        Hvordan dette måles. Produksjonsradene måles på et fast hold-ut-sett valgt ved
+        en hash av innholdet i hver økt, slik at de samme personene holdes utenfor ved
+        hver ny trening og versjonene forblir direkte sammenlignbare. Omtrent en
+        fjerdedel av alle øktene viste seg å være nøyaktige duplikater (samme
+        undersøkelse sendt inn flere ganger); disse fjernes nå før trening, og den
+        gamle tilfeldige splitten som lot duplikater ligge i både trenings- og
+        testsettet er erstattet. Eldre versjoner med lekkasje ble fjernet fordi de var
+        målt på den gamle måten og leste høyere enn disse tallene uten lekkasje.
+        Arkitektur-radene fra 2020 over er fra før de samme rettelsene, så de leser
+        også optimistisk. Tallene her er lavere fordi de er ærlige, ikke fordi
+        modellen er dårligere.
+      </p>
+
       <div class="lb-view" data-view="short">
       <p class="lb-legend">
         <span><span class="dot"></span> beste skår per kolonne</span>
@@ -328,22 +342,16 @@
           <tbody>
             <!-- LB:VERSIONS:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
             <tr>
-              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.2</span></a></td>
-              <td class="lb-score lb-score-best">0.912</td>
-              <td class="lb-score lb-score-best">5.85</td>
-              <td class="lb-score">8.79</td>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.4</span></a></td>
+              <td class="lb-score">0.807</td>
+              <td class="lb-score">8.70</td>
+              <td class="lb-score lb-score-best">11.00</td>
             </tr>
             <tr>
-              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.1</span></a></td>
-              <td class="lb-score lb-score-best">0.912</td>
-              <td class="lb-score lb-score-best">5.85</td>
-              <td class="lb-score">8.79</td>
-            </tr>
-            <tr>
-              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.0</span></a></td>
-              <td class="lb-score">0.886</td>
-              <td class="lb-score">6.48</td>
-              <td class="lb-score lb-score-best">8.76</td>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM (produksjon) v1.3</span></a></td>
+              <td class="lb-score lb-score-best">0.816</td>
+              <td class="lb-score lb-score-best">8.46</td>
+              <td class="lb-score">11.13</td>
             </tr>
             <!-- LB:VERSIONS:END -->
             <tr>
@@ -448,16 +456,22 @@
           <tbody>
             <!-- LB:VERSIONS_LONG:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
             <tr>
-              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM lang (produksjon) v1.2</span></a></td>
-              <td class="lb-score lb-score-best">0.764</td>
-              <td class="lb-score lb-score-best">6.98</td>
-              <td class="lb-score lb-score-best">10.59</td>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM lang (produksjon) v1.4</span></a></td>
+              <td class="lb-score">0.740</td>
+              <td class="lb-score lb-score-best">6.51</td>
+              <td class="lb-score">9.90</td>
+            </tr>
+            <tr>
+              <td><a class="lb-arch-link" href="models/lgb-production"><span class="lb-arch">LightGBM lang (produksjon) v1.3</span></a></td>
+              <td class="lb-score lb-score-best">0.751</td>
+              <td class="lb-score">6.57</td>
+              <td class="lb-score lb-score-best">9.86</td>
             </tr>
             <tr>
               <td><span class="lb-arch lb-arch-plain">Kort modell, samme folk</span></td>
-              <td class="lb-score lb-na">0.733</td>
-              <td class="lb-score lb-na">7.29</td>
-              <td class="lb-score lb-na">14.17</td>
+              <td class="lb-score lb-na">0.713</td>
+              <td class="lb-score lb-na">7.04</td>
+              <td class="lb-score lb-na">14.50</td>
             </tr>
             <!-- LB:VERSIONS_LONG:END -->
           </tbody>
@@ -485,15 +499,15 @@
             <!-- LB:PICK:START (rader regenereres av training/refresh/refresh_and_retrain.py) -->
             <tr>
               <td><span class="lb-arch lb-arch-plain">Fargevalg (kort test)</span></td>
-              <td class="lb-score">0.513</td>
-              <td class="lb-score">0.729</td>
-              <td class="lb-score">0.266</td>
+              <td class="lb-score">0.503</td>
+              <td class="lb-score">0.725</td>
+              <td class="lb-score">0.262</td>
             </tr>
             <tr>
               <td><span class="lb-arch lb-arch-plain">Fargevalg (lang test)</span></td>
-              <td class="lb-score">0.544</td>
-              <td class="lb-score">0.753</td>
-              <td class="lb-score">0.268</td>
+              <td class="lb-score">0.509</td>
+              <td class="lb-score">0.732</td>
+              <td class="lb-score">0.258</td>
             </tr>
             <!-- LB:PICK:END -->
           </tbody>
@@ -501,7 +515,7 @@
       </div>
 
       <p class="lb-note">
-        Sist oppdatert: 2026-06-18. Lenkede arkitekturnavn åpner en per-modell-detaljside
+        Sist oppdatert: 2026-06-19. Lenkede arkitekturnavn åpner en per-modell-detaljside
         i <a href="models/" class="lb-folder">models/</a>. 441-feature-engineering-rørledningen
         er dokumentert på
         <a href="info/features" class="lb-folder">info/features.html</a>.
