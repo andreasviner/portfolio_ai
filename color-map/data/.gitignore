@@ -1,0 +1,6 @@
+# Raw pulled DB rows carry per-session coarse geo — never commit them.
+geo_dump.json
+*.raw.json
+
+# Computed, non-identifying aggregates (place -> mean color + count) MAY be
+# committed; they are not ignored here.
