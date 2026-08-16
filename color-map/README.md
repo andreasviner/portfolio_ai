@@ -1,71 +1,80 @@
-# Color Map · favorite color by place
+# Color Map · the color each place prefers
 
-A white world map where every place people answered the
-[color-polygraph](../color-polygraph/) survey is filled with the **mean favorite
-color** of the people there. Phase 1: **male respondents only**.
+A white map where every place is painted **the one color the most people there
+chose as their favorite**, from the [color-polygraph](../color-polygraph/)
+survey. Toggles: **Men / Women** and **World (by country) / United States (by
+state)**.
 
-Where a place has too few real respondents to trust its mean, we run the
-**pick model** (color-polygraph's `taste-cube/pick_*`) to expand each person's
-single survey into a full personal color-taste distribution, then aggregate —
-so a place with 2 real people still gets a stable color instead of noise.
+Finding: men's most-preferred color is **purple**, women's is **red** — women
+lean warm (red/magenta), men cool (purple/blue/green).
 
-## Data situation (the important part)
+Not the *average* of everyone's favorites (that averages to gray mush — diverse
+hues cancel). The **mode**: since every survey offers a fresh random palette, no
+two people pick the identical RGB, so "most preferred" is counted over perceptual
+**hue families** (red…purple + neutral, in Oklab), and each country is rendered
+as the *within-family mean shade* of its winning family — a real, specific, vivid
+color (US → purple `#2f3399`, Nordics → near-black, Australia → green).
 
-The favorite color + gender live in the local training files, but **the
-geography does not**:
+Where a place has too few real respondents for a stable mode, the **pick model**
+(color-polygraph's `taste-cube/pick_*`) expands each person's single survey into
+a full color-preference distribution, pooled so the winner reflects taste, not
+noise.
 
-| Source | color | gender | geo (country/region/city) |
-|---|---|---|---|
-| `color-polygraph/training/raw/*` (local) | yes | yes | **no** (ip is a placeholder) |
-| `refresh/remote_dump.json` (local) | yes | yes | **no** (export strips geo) |
-| live Cloudflare **D1 database** | yes | yes | **yes** |
+## Data
 
-The worker's `/color-polygraph/export` endpoint *deliberately* omits the geo
-columns (`worker.py` line ~464). So the geo has to be pulled from D1 directly.
-That needs a one-time `wrangler login` (interactive) — see the two options
-below.
+Favorite color + gender are in the local training files, but **geography is
+not** — it lives only in the live Cloudflare **D1** database. The worker's
+`/export` endpoint strips geo by default; we added an opt-in, token-gated
+`?include_geo=1` flag ([worker.py](../color-polygraph/cloudflare/worker.py)) and
+pull with it here.
 
-### Cohort size (from the Jul-6 dump, gender present even though geo isn't)
-- 2173 completed sessions total · **1351 male** · 701 female · 121 non-binary
-- male split: 1009 long-survey, 342 short — all have a final color
+Cohort (Jul-2026 pull): **1,352 men** + **701 women** completed sessions.
+World: men 65 countries / women 39. US: men 48 states (653 people) / women 43
+(393). Thin places (<10 respondents) are the pick model's densification targets
+— 49 male + 31 female countries, 26 male + 29 female US states.
 
-The big 2020 dataset (`save.ligma`, ~6710 sessions, Oslo-dominated) has **no
-geo** and is not in the live DB, so the map is built from the ~1351 live male
-sessions. Most are expected to cluster in a few countries → the pick-model
-densification matters for everywhere else.
+## Pipeline
 
-## Getting the geo out of D1 (pick one — both need `wrangler login` once)
-
-**Option A — extend the export endpoint (repeatable).**
-Add an opt-in `?include_geo=1` (token-gated) to `worker.py`'s export, redeploy
-(`wrangler deploy`), then `fetch_geo.py` pulls over HTTP with the token already
-in `.env`. The map refreshes like the rest of the pipeline. Touches production.
-
-**Option B — one-off read-only D1 query (least invasive).**
-No prod change. After `wrangler login`:
 ```
-npx wrangler d1 execute color-polygraph --remote --json \
-  --command "SELECT id, confirmed_gender, long_survey, final_color_json, country, region, city FROM surveys WHERE confirmed_gender IS NOT NULL" \
-  > color-map/data/geo_dump.json
+python fetch_geo.py                 # pull geo+gender+color from D1 -> data/geo_dump.json
+python densify.py --gender male     # pick-model favorites for thin-place men  -> data/pick_samples_male.json
+python densify.py --gender female   #                             ... women    -> data/pick_samples_female.json
+python aggregate.py                 # modes per gender x {country, US state} -> site/map.json
+python densify.py --validate        # smoke test: real-question pick accuracy (~0.5+, chance 0.25)
 ```
 
-## Pipeline (planned)
+### View the map
+```
+python -m http.server 8123 --directory site
+# open http://localhost:8123/
+```
+`site/index.html` loads `map.json` + `world.geojson` + `us-states.geojson` and
+renders a D3 choropleth (Natural-Earth for world, Albers-USA w/ AK+HI insets for
+states; light by default = white map, dark toggle). Toggles for Men/Women and
+World/US; hover tooltip shows each place's full family breakdown, respondent
+count, and a "pick-model densified · n<10" badge on hatched thin places.
+`?gender=&view=&demo=<placeKey>` deep-links a view / pops a tooltip (press shots).
 
-1. **fetch** geo + gender + final color from D1 → `data/geo_dump.json`
-2. **aggregate** (`aggregate.py`): filter male; group by place; mean favorite
-   color in a **perceptual space (Oklab/LAB)**, not raw RGB, so means don't turn
-   to mud; record respondent count per place.
-3. **densify** sparse places: run the pick model on each person's fingerprint to
-   simulate thousands of picks → a robust per-person color, then aggregate.
-4. **render** (`site/index.html`): white map, each place filled by its mean
-   color; hover shows count + swatch. Country choropleth and/or city points.
-
-## Layout
+## Files
 ```
 color-map/
-  README.md
-  data/          fetched dumps + computed aggregates (raw dumps gitignored)
-  site/          the map page (self-contained HTML)
-  fetch_geo.py   pull geo from D1 (written once fetch method is chosen)
-  aggregate.py   mean-color-per-place + pick-model densification
+  fetch_geo.py     pull live DB with geo (needs color-polygraph/.env token; deployed worker)
+  densify.py       run the pick model on thin-place people (--gender, --validate)
+  aggregate.py     modes per gender x geography -> site/map.json
+  colorspace.py    sRGB<->Oklab, hue families, perceptual mean (shared)
+  data/            geo_dump.json + pick_samples_*.json  (all gitignored, per-session)
+  site/
+    index.html         the map page (Men/Women x World/US toggles)
+    map.json           per-gender, per-place modes + family swatches (what the page reads)
+    world.geojson      simplified Natural Earth (ISO A2), 79 KB
+    us-states.geojson  simplified US states by name, 22 KB
+    vendor/d3.min.js
 ```
+
+## Status
+- [x] worker `include_geo` flag + deploy + `fetch_geo.py`
+- [x] mode-based aggregation (hue families, Oklab within-family shade)
+- [x] pick-model densification (short + long), validated at 0.78 real-question accuracy
+- [x] D3 choropleth: white map, thin-place hatching, tooltip, legend, dark toggle
+- [x] Men/Women toggle · World + US-state views
+- [ ] optional: all-gender view, city-dot layer, deploy to ai.andreaslindeman.com

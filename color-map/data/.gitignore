@@ -2,5 +2,10 @@
 geo_dump.json
 *.raw.json
 
+# Pick-model intermediate (per-person generated colors); regenerate via densify.py.
+pick_samples*.json
+
 # Computed, non-identifying aggregates (place -> mean color + count) MAY be
 # committed; they are not ignored here.
+__pycache__/
+*.pyc

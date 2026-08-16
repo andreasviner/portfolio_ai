@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The colors people prefer · by place</title>
+<style>
+  :root{
+    --ink:#1a1a1f; --ink-2:#55555f; --muted:#8a8a95;
+    --surface:#ffffff; --panel:#ffffff; --line:#e7e7ec; --nodata:#eeeef1;
+    --hatch:rgba(25,25,35,.34); --border:#e7e7ec; --chip:#f3f3f5; --chipactive:#1a1a1f;
+    --shadow:0 1px 2px rgba(20,20,30,.06),0 10px 34px rgba(20,20,30,.09);
+  }
+  :root[data-theme="dark"]{
+    --ink:#ececf0; --ink-2:#a9a9b4; --muted:#70707b;
+    --surface:#0e0e11; --panel:#17171b; --line:#26262d; --nodata:#1d1d23;
+    --hatch:rgba(255,255,255,.5); --border:#23232a; --chip:#1c1c22; --chipactive:#ececf0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 34px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--ink);
+    font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:38px 24px 64px;position:relative}
+  h1{font-size:clamp(26px,4vw,40px);line-height:1.08;letter-spacing:-.022em;margin:0 0 10px;font-weight:650}
+  .sub{color:var(--ink-2);font-size:16px;max-width:66ch;margin:0}
+  .sub a{color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line)}
+  .themebtn{position:absolute;top:38px;right:24px;border:1px solid var(--border);background:var(--panel);
+    color:var(--ink-2);border-radius:9px;padding:7px 11px;font-size:13px;cursor:pointer;line-height:1}
+  .themebtn:hover{color:var(--ink)}
+  .controls{display:flex;flex-wrap:wrap;gap:18px;margin:20px 0 2px;align-items:center}
+  .seg{display:inline-flex;background:var(--chip);border-radius:10px;padding:3px}
+  .seg button{border:0;background:none;color:var(--ink-2);font:inherit;font-size:14px;font-weight:550;
+    padding:6px 14px;border-radius:8px;cursor:pointer;line-height:1.1}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .seglabel{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+  .stats{display:flex;flex-wrap:wrap;gap:30px;margin:20px 0 6px}
+  .stat .k{font-size:25px;font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .stat .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+  .stat .sw{display:inline-block;width:17px;height:17px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+  .mapcard{position:relative;margin-top:14px;border:1px solid var(--border);border-radius:16px;
+    background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+  svg{display:block;width:100%;height:auto}
+  .country{stroke:var(--line);stroke-width:.5px;cursor:pointer}
+  .country.nodata{fill:var(--nodata)}
+  .country:hover{stroke:var(--ink);stroke-width:1.2px}
+  .graticule{fill:none;stroke:var(--line);stroke-width:.5px;opacity:.55}
+  .sphere{fill:none;stroke:var(--line);stroke-width:1px}
+  .hatchline{stroke:var(--hatch);stroke-width:1.5px}
+  .legend{display:flex;flex-wrap:wrap;gap:7px 18px;margin:18px 2px 0;align-items:center}
+  .legend .lab{font-size:13px;color:var(--muted);margin-right:2px}
+  .legend .item{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink-2)}
+  .legend .sw{width:15px;height:15px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+  .legend .pct{color:var(--muted);font-variant-numeric:tabular-nums}
+  .note{color:var(--muted);font-size:13px;margin-top:20px;max-width:78ch}
+  .note b{color:var(--ink-2);font-weight:600}
+  .tip{position:fixed;pointer-events:none;z-index:20;opacity:0;transition:opacity .08s;
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    box-shadow:var(--shadow);padding:13px 14px;min-width:214px;max-width:264px}
+  .tip .name{font-weight:650;font-size:15px}
+  .tip .n{color:var(--muted);font-size:12.5px;margin:1px 0 10px}
+  .tip .lead{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+  .tip .lead .big{width:36px;height:36px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);flex:none}
+  .tip .lead .fam{font-weight:600;text-transform:capitalize}
+  .tip .lead .fam small{display:block;color:var(--muted);font-weight:400;text-transform:none;font-size:12px}
+  .tip .bar{display:flex;height:8px;border-radius:5px;overflow:hidden;margin:2px 0 8px;gap:1px}
+  .tip .bar span{height:100%}
+  .tip .runner{font-size:12.5px;color:var(--ink-2)}
+  .tip .runner b{text-transform:capitalize;font-weight:600}
+  .tip .badge{display:inline-block;margin-top:9px;font-size:10.5px;font-weight:650;letter-spacing:.04em;
+    padding:3px 8px;border-radius:20px;text-transform:uppercase}
+  .tip .badge.thin{background:rgba(200,140,15,.16);color:#a9760d}
+  .tip .badge.dens{background:rgba(45,125,82,.16);color:#2f7d52}
+  :root[data-theme="dark"] .tip .badge.thin{color:#e0b24d}
+  :root[data-theme="dark"] .tip .badge.dens{color:#63c48d}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <button class="themebtn" id="themebtn" aria-label="Toggle dark mode">◐ Theme</button>
+  <h1 id="h1">The colors men prefer</h1>
+  <p class="sub">The single favorite color chosen by the most people in each place, from the
+    <a href="../../color-polygraph/">color&#8209;polygraph</a> survey. Every survey offers a fresh
+    random palette, so no two people pick the identical shade &mdash; colors are counted by hue family
+    and each place is painted the average of its most&#8209;popular family. A real, specific color,
+    not the gray you'd get by averaging everyone's pick together.</p>
+
+  <div class="controls">
+    <span class="seglabel">Who</span>
+    <div class="seg" id="genderSeg">
+      <button data-v="male" class="on">Men</button>
+      <button data-v="female">Women</button>
+    </div>
+    <span class="seglabel">Where</span>
+    <div class="seg" id="geoSeg">
+      <button data-v="world" class="on">World</button>
+      <button data-v="usa">United States</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="mapcard">
+    <svg id="map" viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet" role="img"
+         aria-label="Map of the most-preferred favorite color per place"></svg>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <p class="note" id="note"></p>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script src="vendor/d3.min.js"></script>
+<script>
+const root = document.documentElement;
+document.getElementById("themebtn").onclick = () =>
+  root.setAttribute("data-theme", root.getAttribute("data-theme")==="dark" ? "light":"dark");
+
+const W=960, H=520;
+let gender="male", view="world", agg, GEO={};
+const svg=d3.select("#map"), tip=d3.select("#tip");
+
+function fixWinding(fc){
+  fc.features.forEach(f=>{
+    const gm=f.geometry; if(!gm) return;
+    if(d3.geoArea(f) > 2*Math.PI){
+      const polys = gm.type==="Polygon" ? [gm.coordinates] : gm.coordinates;
+      polys.forEach(rings=>rings.forEach(r=>r.reverse()));
+    }
+  });
+  return fc;
+}
+
+Promise.all([
+  d3.json("map.json"), d3.json("world.geojson"), d3.json("us-states.geojson"),
+]).then(([a,w,u])=>{
+  agg=a; GEO.world=fixWinding(w); GEO.usa=fixWinding(u);
+  // params for demo/deep-link
+  const q=new URLSearchParams(location.search);
+  if(q.get("gender")) gender=q.get("gender");
+  if(q.get("view")) view=q.get("view");
+  syncSeg(); render();
+  const demo=q.get("demo");
+  if(demo) setTimeout(()=>showStatic(demo),0);
+});
+
+function syncSeg(){
+  document.querySelectorAll("#genderSeg button").forEach(b=>b.classList.toggle("on",b.dataset.v===gender));
+  document.querySelectorAll("#geoSeg button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
+}
+document.getElementById("genderSeg").onclick=e=>{ if(e.target.dataset.v){gender=e.target.dataset.v; syncSeg(); render();} };
+document.getElementById("geoSeg").onclick=e=>{ if(e.target.dataset.v){view=e.target.dataset.v; syncSeg(); render();} };
+
+function cap(s){return s? s[0].toUpperCase()+s.slice(1):s;}
+function keyOf(f){ return view==="world" ? f.properties.iso : f.properties.name; }
+
+function render(){
+  const gd=agg.genders[gender], L=gd[view], places=L.places;
+  const geoData=GEO[view];
+  const proj=(view==="world"? d3.geoNaturalEarth1() : d3.geoAlbersUsa()).fitSize([W,H], geoData);
+  const path=d3.geoPath(proj);
+  const noun = gender==="male" ? "men" : "women";
+  document.getElementById("h1").textContent = `The colors ${noun} prefer`;
+
+  svg.selectAll("*").remove();
+  const defs=svg.append("defs");
+  const p=defs.append("pattern").attr("id","thin").attr("width",5).attr("height",5)
+    .attr("patternUnits","userSpaceOnUse").attr("patternTransform","rotate(45)");
+  p.append("line").attr("class","hatchline").attr("x1",0).attr("y1",0).attr("x2",0).attr("y2",5);
+
+  if(view==="world"){
+    svg.append("path").attr("class","sphere").attr("d",path({type:"Sphere"}));
+    svg.append("path").attr("class","graticule").attr("d",path(d3.geoGraticule10()));
+  }
+  const g=svg.append("g");
+  g.selectAll("path.country").data(geoData.features).join("path")
+    .attr("class",f=> places[keyOf(f)] ? "country":"country nodata")
+    .attr("d",path)
+    .attr("fill",f=>{ const r=places[keyOf(f)]; return r?r.hex:null; })
+    .on("pointerenter pointermove",(e,f)=>showTip(e,f,places))
+    .on("pointerleave",()=>tip.style("opacity",0));
+  g.selectAll("path.thinmark")
+    .data(geoData.features.filter(f=>places[keyOf(f)]&&places[keyOf(f)].thin))
+    .join("path").attr("d",path).attr("fill","url(#thin)").attr("pointer-events","none");
+
+  // stats
+  const gl=L.global;
+  d3.select("#stats").html(`
+    <div class="stat"><div class="k">${L.n.toLocaleString("en-US")}</div><div class="l">${noun} surveyed</div></div>
+    <div class="stat"><div class="k">${Object.keys(places).length}</div><div class="l">${view==="world"?"countries":"states"}</div></div>
+    <div class="stat"><div class="k"><span class="sw" style="background:${agg.family_swatches[gl.mode_family]}"></span>${cap(gl.mode_family)}</div>
+      <div class="l">most preferred overall</div></div>`);
+
+  // legend (stable family order, shares from current view)
+  d3.select("#legend").html(`<span class="lab">Hue families</span>`+
+    agg.family_order.filter(f=>gl.shares[f]).map(f=>`<span class="item"><span class="sw" style="background:${agg.family_swatches[f]}"></span>${cap(f)} <span class="pct">${Math.round(gl.shares[f]*100)}%</span></span>`).join(""));
+
+  // note
+  const dens = gd.source==="pick-densified";
+  const placeword = view==="world" ? "countries" : "states";
+  d3.select("#note").html(
+    `Hatched ${placeword} have fewer than ${agg.thin_threshold} respondents`+
+    (dens? `, so their winner is <b>densified with the pick model</b> &mdash; each person's survey expanded into a full color-preference distribution instead of resting on a handful of picks.`
+         : ` &mdash; their winner is provisional.`)+
+    ` Source: color-polygraph live survey, ${noun}, ${agg.generated_at.slice(0,10)}.`);
+}
+
+function tipHTML(rec,name){
+  const bar=agg.families.filter(f=>rec.shares[f])
+    .map(f=>`<span style="width:${rec.shares[f]*100}%;background:${agg.family_swatches[f]}"></span>`).join("");
+  const noun = gender==="male"?"men":"women";
+  return `<div class="name">${name}</div>
+    <div class="n">${rec.n} ${noun}${rec.densified?" · pick-densified":""}</div>
+    <div class="lead"><span class="big" style="background:${rec.hex}"></span>
+      <span class="fam">${cap(rec.mode_family)}<small>most preferred · ${Math.round(rec.mode_share*100)}% · ${rec.hex}</small></span></div>
+    <div class="bar">${bar}</div>
+    ${rec.runner_family?`<div class="runner">then <b>${cap(rec.runner_family)}</b> ${Math.round(rec.runner_share*100)}%</div>`:""}
+    ${rec.densified?`<span class="badge dens">pick-model densified · n&lt;${agg.thin_threshold}</span>`
+                   :(rec.thin?`<span class="badge thin">provisional · n&lt;${agg.thin_threshold}</span>`:"")}`;
+}
+function showTip(e,f,places){
+  const rec=places[keyOf(f)];
+  if(!rec){ tip.style("opacity",0); return; }
+  tip.html(tipHTML(rec,f.properties.name)).style("opacity",1);
+  const pad=15,tw=tip.node().offsetWidth,th=tip.node().offsetHeight;
+  let x=e.clientX+pad,y=e.clientY+pad;
+  if(x+tw>innerWidth) x=e.clientX-tw-pad;
+  if(y+th>innerHeight) y=e.clientY-th-pad;
+  tip.style("left",x+"px").style("top",y+"px");
+}
+function showStatic(key){
+  const places=agg.genders[gender][view].places, rec=places[key];
+  const f=GEO[view].features.find(x=>keyOf(x)===key);
+  if(rec&&f) tip.html(tipHTML(rec,f.properties.name)).style("opacity",1).style("left","120px").style("top","360px");
+}
+</script>
+</body>
+</html>
